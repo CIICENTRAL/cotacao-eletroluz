@@ -13,8 +13,8 @@
 // 0) CONFIGURAÇÃO DO SUPABASE — preencha com os dados do seu projeto
 // (Supabase > Project Settings > API)
 // ---------------------------------------------------------------------
-const SUPABASE_URL = "COLE_AQUI_A_URL_DO_SEU_PROJETO_SUPABASE";
-const SUPABASE_ANON_KEY = "COLE_AQUI_A_ANON_KEY_DO_SEU_PROJETO_SUPABASE";
+const SUPABASE_URL = "https://bhqqmzhdfvqwtvhazwxf.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJocXFtemhkZnZxd3R2aGF6d3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMzI5NjAsImV4cCI6MjEwMTYwODk2MH0.vH5JftbRH4DJYXHzf3ksKPQ7fYXthsiawrPMky7-FYI";
 const DOMINIO_LOGIN = "eletroluz.local"; // usado só para montar o e-mail interno do Auth (login@eletroluz.local)
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
