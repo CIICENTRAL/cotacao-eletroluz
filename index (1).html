@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projeto Fênix - PF-001 V0.17</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+if(window.pdfjsLib){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{
+  color-scheme: light;
+  --azul:#2540c9;
+  --azul-escuro:#16277a;
+  --vermelho:#FF1F28;
+  --rosa:#E6B3B8;
+  --branco:#FFFFFF;
+  --fundo:#F3F5F8;
+  --borda:#DDE3EC;
+  --texto:#1F2937;
+  --muted:#6B7280;
+  --verde:#16277a;
+  --laranja:#2540c9;
+  --amarelo:#5b73d6;
+  --sombra:0 10px 24px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--fundo);color:var(--texto)}
+button,input,textarea,select{font-family:inherit}
+.hidden{display:none!important}
+.card{background:#fff;border:1px solid var(--borda);border-radius:16px;box-shadow:var(--sombra)}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:800;cursor:pointer}
+.btn-primary{background:var(--azul);color:#fff}
+.btn-red{background:var(--vermelho);color:#fff}
+.btn-green{background:var(--verde);color:#fff}
+.btn-orange{background:var(--laranja);color:#fff}
+.btn-light{background:#EEF2F7;color:var(--azul)}
+.btn-outline{background:#fff;color:var(--texto);border:1px solid var(--borda)}
+.btn:active{transform:translateY(1px)}
+input,select,textarea{width:100%;border:1px solid var(--borda);border-radius:10px;padding:11px 12px;font-size:14px;outline:none;background:#fff}
+input:focus,select:focus,textarea:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(40,72,154,.12)}
+textarea{resize:vertical;min-height:78px}
+label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}
+.field{margin-bottom:14px}
+.small{font-size:12px;color:var(--muted)}
+.muted{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.el-logo{width:52px;height:52px;flex:0 0 auto}
+.el-logo.small-logo{width:42px;height:42px}
+.login{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--azul-escuro),var(--azul));padding:24px;position:relative;overflow:hidden
+}
+
+.login-box{width:460px;padding:34px;position:relative;z-index:1}
+.login-brand{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:24px}
+.login-title{font-size:25px;font-weight:900;color:var(--azul);line-height:1.05}
+.login-sub{font-size:13px;color:var(--muted);font-weight:700;margin-top:4px}
+.help{background:#F8FAFC;border:1px solid var(--borda);border-radius:12px;padding:12px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5}
+.topbar{
+  height:76px;background:#fff;border-bottom:5px solid var(--azul-escuro);
+  display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-main{font-size:22px;font-weight:900;color:var(--azul);line-height:1}
+.brand-sub{font-size:12px;color:var(--muted);font-weight:800;margin-top:4px}
+.top-actions{display:flex;align-items:center;gap:10px}
+.branch-pill{background:#F4F7FF;border:1px solid #DCE5F8;color:var(--azul);padding:10px 14px;border-radius:999px;font-weight:900}
+.container{max-width:1240px;margin:0 auto;padding:24px}
+.page-title{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}
+.page-title h1{margin:0;font-size:26px;color:var(--azul)}
+.page-title p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.page-actions{display:flex;gap:10px;flex-wrap:wrap}
+.panel{padding:20px;margin-bottom:18px}
+.action-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;border-top:6px solid var(--azul)}
+.action-hero h2{margin:0;color:var(--azul);font-size:22px}
+.kpi{padding:16px;border-top:5px solid var(--azul)}
+.kpi.red{border-top-color:var(--vermelho)}
+.kpi.orange{border-top-color:var(--laranja)}
+.kpi.green{border-top-color:var(--verde)}
+.kpi.yellow{border-top-color:var(--amarelo)}
+.kpi.clickable{cursor:pointer;transition:.15s ease}
+.kpi.clickable:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(15,23,42,.10)}
+.kpi-label{font-size:12px;color:var(--muted);font-weight:900;text-transform:uppercase}
+.kpi-value{font-size:28px;font-weight:900;color:var(--azul);margin-top:7px}
+.search{max-width:460px;margin-bottom:16px}
+.opp-list{display:grid;gap:14px}
+.opp-card{padding:18px;display:grid;grid-template-columns:130px 1.1fr 1fr 1fr auto;gap:14px;align-items:center;border-left:6px solid #9CA3AF;cursor:pointer;transition:.15s ease}
+.opp-card:hover{transform:translateY(-2px)}
+.opp-card.urgente{border-left-color:var(--vermelho)}
+.opp-card.alta{border-left-color:var(--laranja)}
+.opp-card.media{border-left-color:var(--amarelo)}
+.opp-card.normal{border-left-color:var(--azul)}
+.code{font-size:17px;font-weight:900;color:var(--azul)}
+.info-title{font-size:12px;color:var(--muted);margin-bottom:4px}
+.info-value{font-size:14px;font-weight:800}
+.badge{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:900}
+.badge-red{background:#FFE8EA;color:var(--vermelho)}
+.badge-orange{background:#E7F0FF;color:var(--azul)}
+.badge-yellow{background:#EEF2F7;color:#4B5563}
+.badge-blue{background:#E7F0FF;color:var(--azul)}
+.badge-green{background:#E7F0FF;color:var(--azul-escuro)}
+.badge-gray{background:#EEF2F7;color:#4B5563}
+.section-title{font-size:15px;color:var(--azul);font-weight:900;letter-spacing:.4px;text-transform:uppercase;margin-bottom:16px}
+.priority-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.priority-option{border:1px solid var(--borda);border-radius:12px;padding:12px;background:#fff;font-weight:900;text-align:center;cursor:pointer}
+.priority-option input{width:auto;margin-right:6px}
+.priority-option:has(input:checked){border-color:var(--azul);box-shadow:0 0 0 3px rgba(40,72,154,.10);background:#F8FBFF}
+.item-empty{border:1px dashed #B6C0CE;border-radius:14px;padding:22px;text-align:center;color:var(--muted);margin-top:14px}
+.item-row{border:1px solid var(--borda);background:#FBFCFE;border-radius:14px;padding:14px;margin-top:12px;display:grid;grid-template-columns:1fr auto;gap:12px}
+.item-row h4{margin:0 0 6px}
+.footer-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:18px}
+.with-actions{display:grid;grid-template-columns:1fr 270px;gap:18px;align-items:start}
+.side-actions{padding:16px;position:sticky;top:96px}
+.side-actions h3{margin:0 0 12px;color:var(--azul)}
+.side-actions .btn{width:100%;margin-bottom:10px}
+.side-actions .hint{font-size:12px;color:var(--muted);line-height:1.4;margin-top:8px}
+.detail-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.timeline,.status-box{padding:18px}
+.timeline-item{padding:12px 0;border-bottom:1px solid var(--borda)}
+.timeline-item:last-child{border-bottom:0}
+.status-line{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--borda)}
+.status-line:last-child{border-bottom:0}
+.columns{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px}
+.column{padding:16px;min-height:330px}
+.column h3{margin:0 0 12px;color:var(--azul);font-size:16px}
+.task{border:1px solid var(--borda);border-radius:12px;background:#FBFCFE;padding:13px;margin-bottom:10px;cursor:grab;transition:.15s ease}
+.task:active{cursor:grabbing}
+.task.dragging{opacity:.5}
+.column [id^="lucas"]{min-height:60px}
+.column.drop-hover,[id^="lucas"].drop-hover{outline:2px dashed var(--azul);outline-offset:4px;border-radius:12px;background:rgba(40,72,154,.04)}
+.task:hover{transform:translateY(-2px)}
+.task-top{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}
+.task-code{font-weight:900;color:var(--azul)}
+.work-layout{display:grid;grid-template-columns:1fr 340px;gap:18px}
+table{width:100%;border-collapse:collapse}
+th,td{border-bottom:1px solid var(--borda);padding:10px;text-align:left;font-size:13px}
+th{color:var(--muted);text-transform:uppercase;font-size:12px}
+.side-panel{padding:18px}
+.side-panel h3{margin:0 0 12px;color:var(--azul);font-size:16px}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{width:560px;background:#fff;border-radius:18px;box-shadow:0 26px 60px rgba(0,0,0,.25);padding:22px;max-height:86vh;overflow:auto}
+.modal h2{margin:0 0 18px;color:var(--azul)}
+.footer-band{margin-top:26px;background:var(--azul-escuro);color:#fff;border-radius:18px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center}
+.admin-table td .btn{padding:8px 10px;font-size:12px}
+.filter-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.pill{padding:8px 12px;border:1px solid var(--borda);background:#fff;border-radius:999px;font-size:12px;font-weight:800;cursor:pointer}
+.pill.active{background:#E7F0FF;color:var(--azul);border-color:#C7D7FF}
+.list-link{color:var(--azul);font-weight:800;text-decoration:underline;cursor:pointer}
+.column.fila-col{border-top:6px solid var(--azul);background:linear-gradient(180deg,#F4F7FF 0%,#FFFFFF 46%)}
+.column.andamento-col{border-top:6px solid var(--azul);background:linear-gradient(180deg,#F4F7FF 0%,#FFFFFF 46%)}
+.column.loja-col{border-top:6px solid var(--azul-escuro);background:linear-gradient(180deg,#EEF2F9 0%,#FFFFFF 46%)}
+.column.fornecedor-col{border-top:6px solid var(--vermelho);background:linear-gradient(180deg,#F4F7FF 0%,#FFFFFF 46%)}
+.flow-step{
+  border:1px solid var(--borda);
+  border-radius:12px;
+  padding:10px 12px;
+  margin-bottom:8px;
+  background:#fff;
+}
+.flow-step .step-title{
+  font-size:12px;
+  color:var(--muted);
+  font-weight:900;
+  text-transform:uppercase;
+}
+.flow-step .step-action{
+  margin-top:3px;
+  font-size:13px;
+  font-weight:900;
+  color:var(--azul);
+}
+.side-actions .divider{
+  height:1px;
+  background:var(--borda);
+  margin:12px 0;
+}
+.btn-muted{
+  background:#F3F4F6;
+  color:#4B5563;
+}
+.next-action-box{
+  border:1px solid var(--borda);
+  background:#F8FAFC;
+  border-radius:12px;
+  padding:12px;
+}
+.next-action-box .label{
+  font-size:12px;
+  color:var(--muted);
+  font-weight:900;
+  text-transform:uppercase;
+}
+.next-action-box .value{
+  margin-top:5px;
+  color:var(--azul);
+  font-weight:900;
+}
+.chart-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-bottom:18px;
+}
+.chart-card{
+  padding:18px;
+}
+.chart-title{
+  font-size:16px;
+  color:var(--azul);
+  font-weight:900;
+  margin-bottom:14px;
+}
+.bar-row{
+  display:grid;
+  grid-template-columns:150px 1fr 42px;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+  font-size:13px;
+}
+.bar-bg{
+  height:13px;
+  background:#EEF2F7;
+  border-radius:999px;
+  overflow:hidden;
+}
+.bar-fill{
+  height:100%;
+  border-radius:999px;
+  background:var(--azul);
+}
+.bar-fill.red{background:var(--vermelho)}
+.bar-fill.orange{background:var(--laranja)}
+.bar-fill.yellow{background:var(--amarelo)}
+.bar-fill.green{background:var(--verde)}
+.donut-wrap{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+.donut{
+  width:138px;
+  height:138px;
+  border-radius:50%;
+  background:conic-gradient(var(--verde) 0 58%, var(--laranja) 58% 78%, var(--amarelo) 78% 91%, var(--vermelho) 91% 100%);
+  position:relative;
+  flex:0 0 auto;
+}
+.donut:after{
+  content:"";
+  position:absolute;
+  inset:28px;
+  border-radius:50%;
+  background:#fff;
+}
+.donut-center{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  color:var(--azul);
+  z-index:1;
+  font-size:22px;
+}
+.legend{
+  display:grid;
+  gap:8px;
+  font-size:13px;
+}
+.legend span{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:3px;
+  margin-right:6px;
+}
+.flow-mini{
+  display:grid;
+  gap:8px;
+  margin-bottom:14px;
+}
+.flow-mini .flow-step{
+  margin-bottom:0;
+}
+.alert-box{
+  border:1px solid #FFD4D7;
+  background:#FFF1F2;
+  color:#A3000B;
+  border-radius:12px;
+  padding:12px;
+  font-size:13px;
+  font-weight:800;
+  margin-bottom:14px;
+}
+.alert-tag{
+  display:inline-flex;
+  align-items:center;
+  padding:5px 9px;
+  border-radius:999px;
+  background:#FFF1F2;
+  color:#A3000B;
+  font-size:12px;
+  font-weight:900;
+  margin-top:6px;
+}
+.exec-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:14px;
+  margin-bottom:18px;
+}
+.exec-card{
+  padding:16px;
+  border-top:5px solid var(--azul);
+}
+.exec-card.good{border-top-color:var(--verde)}
+.exec-card.warn{border-top-color:var(--laranja)}
+.exec-card.bad{border-top-color:var(--vermelho)}
+.exec-label{
+  font-size:11px;
+  color:var(--muted);
+  font-weight:900;
+  text-transform:uppercase;
+}
+.exec-value{
+  font-size:24px;
+  font-weight:900;
+  color:var(--azul);
+  margin-top:6px;
+}
+.kpi-note{
+  background:#F8FAFC;
+  border:1px solid var(--borda);
+  border-radius:14px;
+  padding:14px;
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:18px;
+}
+.queue-rule{
+  background:#F8FAFC;
+  border:1px solid var(--borda);
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:18px;
+  font-size:13px;
+  color:var(--muted);
+}
+.queue-rule b{color:var(--azul)}
+.sla-chip{
+  display:inline-flex;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  margin-top:6px;
+}
+.sla-chip.ok{background:#EAF6EA;color:var(--verde)}
+.sla-chip.att{background:#FFF3E5;color:#A64F00}
+.sla-chip.bad{background:#FFE8EA;color:var(--vermelho)}
+.rank-chip{
+  display:inline-flex;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  background:#E7F0FF;
+  color:var(--azul);
+  margin-bottom:6px;
+}
+.delete-manager-box{
+  border:1px solid #FFD4D7;
+  background:#FFF1F2;
+  border-radius:12px;
+  padding:12px;
+  margin-top:12px;
+}
+.delete-manager-box .title{
+  color:var(--vermelho);
+  font-weight:900;
+  font-size:13px;
+  margin-bottom:6px;
+}
+.delete-manager-box .small{
+  line-height:1.35;
+}
+.user-status{
+  display:inline-flex;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+}
+.user-status.active{background:#EAF6EA;color:var(--verde)}
+.user-status.inactive{background:#EEF2F7;color:#4B5563}
+.admin-actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.admin-actions .btn{
+  padding:7px 9px;
+  font-size:11px;
+}
+.perm-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px 14px;
+}
+.perm-item{
+  border:1px solid var(--borda);
+  border-radius:10px;
+  padding:10px;
+  background:#F8FAFC;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  font-weight:800;
+}
+.perm-item input{
+  width:auto;
+}
+.perm-group-title{
+  margin:16px 0 8px;
+  color:var(--azul);
+  font-size:13px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.perm-summary{
+  font-size:12px;
+  color:var(--muted);
+  max-width:280px;
+  line-height:1.35;
+}
+.profile-hint{
+  background:#F8FAFC;
+  border:1px solid var(--borda);
+  border-radius:12px;
+  padding:12px;
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:14px;
+}
+.locked-field{
+  background:#F8FAFC;
+  border:1px solid var(--borda);
+  border-radius:10px;
+  padding:11px 12px;
+  font-size:14px;
+  font-weight:900;
+  color:var(--azul);
+}
+.user-filial-note{
+  background:#F8FAFC;
+  border:1px solid var(--borda);
+  border-radius:12px;
+  padding:12px;
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:14px;
+}
+@media(max-width:950px){
+  .exec-grid{grid-template-columns:1fr}
+  .chart-grid{grid-template-columns:1fr}
+  .grid2,.grid3,.grid4,.grid5,.opp-card,.detail-grid,.columns,.work-layout,.with-actions,.priority-grid{grid-template-columns:1fr}
+  .topbar{height:auto;align-items:flex-start;flex-direction:column;padding:14px}
+  .top-actions{flex-wrap:wrap}
+  .side-actions{position:static}
+  .footer-band{flex-direction:column;align-items:flex-start;gap:10px}
+}
+</style>
+</head>
+<body>
+<section id="login" class="login">
+  <div class="login-box card">
+    <div class="login-brand">
+      <div>
+        <div class="login-title">Cotação</div>
+      </div>
+    </div>
+    <div class="field"><label>Usuário</label><input id="loginUser" placeholder="Digite seu usuário"></div>
+    <div class="field"><label>Senha</label><input id="loginPass" type="password" placeholder="Digite sua senha"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">ENTRAR</button>
+  </div>
+</section>
+<section id="app" class="hidden">
+  <div class="topbar">
+    <div class="brand">
+      <div>
+        <div class="brand-main">Cotação</div>
+        <div class="brand-sub">Eletroluz</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <div id="branchName" class="branch-pill"></div>
+      <button id="opsTopBtn" class="btn btn-light hidden" onclick="show('lucas')">Fila Operacional</button>
+      <button class="btn btn-light" onclick="openPasswordModal()">Trocar senha</button>
+      <button id="adminTopBtn" class="btn btn-light hidden" onclick="show('admin')">Administração</button>
+      <button class="btn btn-outline" onclick="logout()">Sair</button>
+    </div>
+  </div>
+  <main id="screen-loja" class="container hidden">
+    <div class="card panel action-hero">
+      <div>
+        <h2>Nova Oportunidade</h2>
+        <p class="muted">Solicite itens fora do fluxo normal de abastecimento.</p>
+      </div>
+      <button class="btn btn-primary" onclick="show('nova')">+ NOVA OPORTUNIDADE</button>
+    </div>
+    <div class="page-title">
+      <div>
+        <h1>Minhas Oportunidades</h1>
+        <p>A loja visualiza apenas suas próprias solicitações.</p>
+      </div>
+    </div>
+    <div id="lojaDecisionAlert" class="alert-box hidden">
+      Você possui oportunidades aguardando decisão há mais de 72h úteis. Informe se fechou a venda, se perdeu, se precisa de revisão ou se deseja cancelar.
+    </div>
+    <div class="grid4">
+      <div class="card kpi clickable" onclick="openDrill('Oportunidades Abertas', visibleOpps().filter(o=>!['Cancelada','Indeferida','Finalizada'].includes(o.status)))"><div class="kpi-label">Abertas</div><div class="kpi-value" id="kLojaAbertas">0</div></div>
+      <div class="card kpi orange clickable" onclick="openDrill('Em atendimento', visibleOpps().filter(o=>['Em atendimento','Aguardando fornecedor','Em revisão'].includes(o.status)))"><div class="kpi-label">Em atendimento</div><div class="kpi-value" id="kLojaAtendimento">0</div></div>
+      <div class="card kpi yellow clickable" onclick="openDrill('Aguardando loja', visibleOpps().filter(o=>o.status==='Aguardando decisão da loja'))"><div class="kpi-label">Aguardando loja</div><div class="kpi-value" id="kLojaDecisao">0</div></div>
+      <div class="card kpi green clickable" onclick="openDrill('Encaminhadas', visibleOpps().filter(o=>o.status==='Encaminhada para Compras'))"><div class="kpi-label">Encaminhadas</div><div class="kpi-value" id="kLojaCompras">0</div></div>
+    </div>
+    <input class="search" placeholder="Buscar por número ou cliente..." oninput="renderLoja(this.value)">
+    <div id="lojaList" class="opp-list"></div>
+    <div class="footer-band">
+      <div><b>Cotação</b><br><span style="font-size:13px">Plataforma operacional do Departamento de Compras.</span></div>
+      <div><b>eletroluz.net</b></div>
+    </div>
+  </main>
+  <main id="screen-nova" class="container hidden">
+    <div class="page-title">
+      <div><h1>Nova Oportunidade</h1><p>Campos técnicos aparecem apenas quando necessários.</p></div>
+      <button class="btn btn-outline" onclick="show('loja')">Voltar</button>
+    </div>
+    <div class="card panel">
+      <div class="section-title">Dados Gerais</div>
+      <div class="user-filial-note">
+        A cotação sempre será vinculada à filial solicitante do usuário. Se o usuário tiver acesso a mais de uma filial, ele escolhe aqui qual filial está solicitando.
+      </div>
+      <div class="field">
+        <label>Tipo de solicitação</label>
+        <div class="priority-grid" style="grid-template-columns:1fr 1fr">
+          <label class="priority-option"><input type="radio" name="tipoOpp" value="item" checked onchange="alternarTipoOportunidade()">Item avulso</label>
+          <label class="priority-option"><input type="radio" name="tipoOpp" value="projeto" onchange="alternarTipoOportunidade()">Projeto Elétrico</label>
+        </div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label>Filial solicitante *</label><div id="nFilialSolicitanteBox"></div></div>
+        <div class="field"><label>Cliente *</label><input id="nCliente" placeholder="Ex.: Construtora Alfa"></div>
+        <div class="field"><label>CPF/CNPJ (opcional)</label><input id="nCpfCnpj" placeholder="Ex.: 00.000.000/0001-00"></div>
+        <div class="field"><label>Vendedor</label><input id="nVendedor" placeholder="Nome do vendedor"></div>
+      </div>
+      <div class="field">
+        <label>Prioridade</label>
+        <div class="priority-grid">
+          <label class="priority-option"><input name="prio" type="radio" value="Normal" checked>Normal</label>
+          <label class="priority-option"><input name="prio" type="radio" value="Média">Média</label>
+          <label class="priority-option"><input name="prio" type="radio" value="Alta">Alta</label>
+          <label class="priority-option"><input name="prio" type="radio" value="Urgente">Urgente</label>
+        </div>
+      </div>
+      <div class="field"><label>Observações gerais</label><textarea id="nObs"></textarea></div>
+    </div>
+    <div id="blocoItens" class="card panel">
+      <div class="section-title">Itens</div>
+      <button class="btn btn-light" onclick="openItemModal()">+ ADICIONAR ITEM</button>
+      <div id="itemsBox"><div class="item-empty">Nenhum item cadastrado.</div></div>
+      <div class="footer-actions">
+        <button class="btn btn-outline" onclick="show('loja')">CANCELAR</button>
+        <button class="btn btn-primary" onclick="sendOpportunity()">ENVIAR OPORTUNIDADE</button>
+      </div>
+    </div>
+    <div id="blocoProjeto" class="card panel hidden">
+      <div class="section-title">Arquivo(s) do Projeto Elétrico</div>
+      <div class="field">
+        <label>Anexar projeto (planta, memorial, especificação etc.)</label>
+        <input type="file" id="nProjetoArquivo" accept=".pdf,.dwg,.zip,image/*" multiple onchange="atualizarArquivosProjeto(event)">
+        <div id="nProjetoStatus" class="small muted" style="margin-top:6px">Nenhum arquivo anexado ainda.</div>
+      </div>
+      <div class="footer-actions">
+        <button class="btn btn-outline" onclick="show('loja')">CANCELAR</button>
+        <button class="btn btn-primary" onclick="sendOpportunity()">ENVIAR OPORTUNIDADE</button>
+      </div>
+    </div>
+  </main>
+  <main id="screen-detalhe" class="container hidden">
+    <div class="page-title">
+      <div><h1 id="dNum"></h1><p id="dSub"></p></div>
+      <button class="btn btn-outline" onclick="show(currentUser.perfil==='loja'?'loja':'lucas')">Voltar</button>
+    </div>
+    <div class="with-actions">
+      <div class="detail-grid">
+        <div>
+          <div class="card timeline" style="margin-bottom:18px">
+            <div class="section-title">Itens solicitados</div>
+            <div id="dItens"></div>
+          </div>
+          <div class="card timeline">
+            <div class="section-title">Histórico</div>
+            <div id="dHistorico"></div>
+          </div>
+        </div>
+        <div class="card status-box">
+          <div class="section-title">Situação</div>
+          <div class="status-line"><span>Status</span><b id="dStatus"></b></div>
+          <div class="status-line"><span>Próxima ação</span><b id="dAction"></b></div>
+          <div class="status-line"><span>Responsável</span><b>Lucas Perin</b></div>
+          <div class="status-line"><span>Posição na fila</span><b id="dFila"></b></div>
+          <div class="status-line"><span>Atualização</span><b id="dUpdate"></b></div>
+          <div class="status-line"><span>Alertas loja</span><b id="dAlertasLoja">-</b></div>
+          <div class="status-line"><span>Próximo alerta</span><b id="dProximoAlerta">-</b></div>
+        </div>
+      </div>
+      <aside class="card side-actions">
+        <h3>Ações</h3>
+        <button class="btn btn-green" onclick="confirmarVendaReal()">Confirmar venda</button>
+        <button class="btn btn-orange" onclick="alert('Revisão solicitada.')">Solicitar revisão</button>
+        <button class="btn btn-light" onclick="naoFechouVendaReal()">Não fechou a venda</button>
+        <button class="btn btn-red" onclick="openCancelModal()">Cancelar oportunidade</button>
+        <div id="deleteBoxDetail" class="delete-manager-box hidden">
+          <div class="title">Área do gestor</div>
+          <button class="btn btn-red" onclick="deleteCurrentOpportunity()">Excluir solicitação</button>
+          <div class="small">Uso exclusivo para testes. Exclui a solicitação da base simulada.</div>
+        </div>
+        <div class="hint">As ações ficam fixas na lateral para reduzir rolagem e deixar o próximo passo visível.</div>
+      </aside>
+    </div>
+  </main>
+  <main id="screen-lucas" class="container hidden">
+    <div class="page-title">
+      <div>
+        <h1>Fila Operacional</h1>
+        <p>Lucas pode assumir a próxima da fila ou clicar diretamente em qualquer oportunidade.</p>
+      </div>
+      <div class="page-actions">
+        <button id="backDashboardBtn" class="btn btn-outline hidden" onclick="show('gestor')">VOLTAR AO DASHBOARD</button>
+        <button class="btn btn-primary" onclick="assumirProxima()">ASSUMIR PRÓXIMA</button>
+      </div>
+    </div>
+    <div class="queue-rule">
+      <b>Regra do “Assumir Próxima”:</b> o sistema prioriza automaticamente por SLA e urgência.
+      Ordem: <b>fora do SLA</b>, depois <b>a estourar</b>, depois <b>prioridade Urgente</b>, <b>Alta</b>, <b>Média</b>, <b>Normal</b>, e por fim a oportunidade mais antiga.
+    </div>
+    <div class="grid4">
+      <div class="card kpi clickable" onclick="openDrill('Recebidas', getByStatus('Recebida'))"><div class="kpi-label">Recebidas</div><div class="kpi-value" id="kLucasRecebidas">0</div></div>
+      <div class="card kpi green clickable" onclick="openDrill('Respondidas hoje', getByStatus('Respondida'))"><div class="kpi-label">Respondidas hoje</div><div class="kpi-value" id="kLucasRespondidas">0</div></div>
+      <div class="card kpi clickable" onclick="openDrill('Encaminhadas', getByStatus('Encaminhada para Compras'))"><div class="kpi-label">Encaminhadas</div><div class="kpi-value" id="kLucasEncaminhadas">0</div></div>
+      <div class="card kpi red clickable" onclick="openDrill('SLA vermelho', getSlaVermelho())"><div class="kpi-label">SLA vermelho</div><div class="kpi-value" id="kLucasSlaVermelho">0</div></div>
+    </div>
+    <div class="grid4" style="margin-top:14px;margin-bottom:18px">
+      <div class="card kpi yellow clickable" onclick="openDrill('Aguardando loja', getByStatus('Aguardando decisão da loja'))"><div class="kpi-label">Aguardando loja</div><div class="kpi-value" id="kLucasAguardandoLoja">0</div></div>
+      <div class="card kpi"><div class="kpi-label">1ª resposta</div><div class="kpi-value">-</div></div>
+      <div class="card kpi"><div class="kpi-label">Atendimento médio</div><div class="kpi-value">-</div></div>
+      <div class="card kpi orange clickable" onclick="openDrill('Aguardando fornecedor', getByStatus('Aguardando fornecedor'))"><div class="kpi-label">Aguardando fornecedor</div><div class="kpi-value" id="kLucasAguardandoFornecedor">0</div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="card chart-card">
+        <div class="chart-title">Foco operacional do Lucas</div>
+        <div class="bar-row"><div>Na fila</div><div class="bar-bg"><div class="bar-fill" style="width:25%"></div></div><b id="chartLucasFila">0</b></div>
+        <div class="bar-row"><div>Em atendimento</div><div class="bar-bg"><div class="bar-fill orange" style="width:25%"></div></div><b id="chartLucasAtendimento">0</b></div>
+        <div class="bar-row"><div>Aguardando fornecedor</div><div class="bar-bg"><div class="bar-fill red" style="width:25%"></div></div><b id="chartLucasFornecedor">0</b></div>
+        <div class="bar-row"><div>Aguardando loja</div><div class="bar-bg"><div class="bar-fill yellow" style="width:25%"></div></div><b id="chartLucasLoja">0</b></div>
+      </div>
+      <div class="card chart-card">
+        <div class="chart-title">Prioridades em aberto</div>
+        <div class="bar-row"><div>Urgente</div><div class="bar-bg"><div class="bar-fill red" style="width:25%"></div></div><b id="chartPrioUrgente">0</b></div>
+        <div class="bar-row"><div>Alta</div><div class="bar-bg"><div class="bar-fill orange" style="width:25%"></div></div><b id="chartPrioAlta">0</b></div>
+        <div class="bar-row"><div>Média</div><div class="bar-bg"><div class="bar-fill yellow" style="width:25%"></div></div><b id="chartPrioMedia">0</b></div>
+        <div class="bar-row"><div>Normal</div><div class="bar-bg"><div class="bar-fill" style="width:25%"></div></div><b id="chartPrioNormal">0</b></div>
+      </div>
+    </div>
+    <div class="filter-pills">
+      <button class="pill active" onclick="setLucasFilter('todos', this)">Todos</button>
+      <button class="pill" onclick="setLucasFilter('fila', this)">Na fila</button>
+      <button class="pill" onclick="setLucasFilter('andamento', this)">Em andamento</button>
+      <button class="pill" onclick="setLucasFilter('loja', this)">Aguardando loja</button>
+      <button class="pill" onclick="setLucasFilter('fornecedor', this)">Aguardando fornecedor</button>
+    </div>
+    <div class="columns">
+      <div class="card column fila-col"><h3>Na fila</h3><div id="lucasFila"></div></div>
+      <div class="card column andamento-col"><h3>Em atendimento</h3><div id="lucasAndamento"></div></div>
+      <div class="card column fornecedor-col"><h3>Aguardando fornecedor</h3><div id="lucasFornecedor"></div></div>
+      <div class="card column loja-col"><h3>Aguardando loja</h3><div id="lucasLoja"></div></div>
+    </div>
+  </main>
+  <main id="screen-atendimento" class="container hidden">
+    <div class="page-title">
+      <div><h1 id="aNum">CO-001258</h1><p id="aSub">Filial: Matriz - Maringá | Cliente: Construtora Alfa</p></div>
+      <button class="btn btn-outline" onclick="show('lucas')">Voltar</button>
+    </div>
+    <div id="atendimentoClienteAlerta" class="alert-box hidden"></div>
+    <div class="with-actions">
+      <div class="work-layout">
+        <div class="card panel">
+          <div class="section-title">Item solicitado</div>
+          <div id="blocoItemPadraoAtendimento">
+            <div class="grid2">
+              <div><div class="info-title">Descrição</div><div class="info-value" id="aItemDesc">-</div></div>
+              <div><div class="info-title">Quantidade</div><div class="info-value" id="aItemQtd">-</div></div>
+              <div><div class="info-title">Marca</div><div class="info-value" id="aItemMarca">-</div></div>
+              <div><div class="info-title">Referência</div><div class="info-value" id="aItemRef">-</div></div>
+            </div>
+            <div id="aItensExtras" class="small muted hidden" style="margin-top:8px"></div>
+          </div>
+          <div id="blocoProjetoAtendimento" class="hidden">
+            <div class="info-title">Arquivos do projeto</div>
+            <div id="aArquivosProjeto" class="small" style="margin-top:6px"></div>
+          </div>
+          <hr style="border:0;border-top:1px solid var(--borda);margin:18px 0">
+          <div class="grid3">
+            <div class="field"><label>Código Eletroluz</label><input id="aCodigoEletroluz" placeholder="Ainda não cadastrado" oninput="salvarCodigoEletroluz()"></div>
+            <div class="field"><label>Comprador responsável</label><select id="aComprador" onchange="salvarComprador()"><option value="">Selecione...</option><option>João Victor Dias</option><option>Matheus Felipe da Silva</option><option>Wellington Garcia</option><option>Thaís Rios</option></select></div>
+            <div class="next-action-box">
+              <div class="label">Próxima ação atual</div>
+              <div class="value" id="acaoAtualBox">-</div>
+              <div class="small">Alterada pelos botões da lateral, não por seleção manual.</div>
+            </div>
+          </div>
+          <div class="section-title">Fornecedores cotados</div>
+          <table style="margin-top:10px">
+            <thead><tr><th>Fornecedor</th><th>Valor</th><th>Prazo</th><th>Condição</th></tr></thead>
+            <tbody id="aFornecedoresBody"></tbody>
+          </table>
+          <button class="btn btn-light" style="margin-top:10px" onclick="adicionarFornecedorCotado()">+ ADICIONAR FORNECEDOR</button>
+          <div class="field" style="margin-top:16px"><label>Resposta para loja</label><textarea id="aResposta" oninput="salvarRespostaLoja()"></textarea></div>
+        </div>
+        <div class="card side-panel">
+          <h3>SLA</h3>
+          <div class="status-line"><span>Tempo útil</span><b id="aSlaTempo" style="color:var(--laranja)">-</b></div>
+          <div class="status-line"><span>Faixa</span><b id="aSlaFaixa">-</b></div>
+          <div class="status-line"><span>Vermelho</span><b>4h00</b></div>
+          <h3 style="margin-top:22px">Histórico de cotações</h3>
+          <div id="aHistoricoCotacoes"><div class="item-empty">Nenhuma cotação registrada ainda.</div></div>
+        </div>
+      </div>
+      <aside class="card side-actions">
+        <h3>Ações disponíveis</h3>
+        <button class="btn btn-orange" id="btnCobrarFornecedor" onclick="setAcaoAtual('Cobrar fornecedor')">Cobrar fornecedor</button>
+        <button class="btn btn-orange hidden" id="btnEnviarIndustria" onclick="setAcaoAtual('Enviar para indústria')">Enviar para indústria</button>
+        <button class="btn btn-light" onclick="setAcaoAtual('Registrar retorno')">Registrar retorno</button>
+        <button class="btn btn-green" onclick="setAcaoAtual('Responder loja')">Responder loja</button>
+        <button class="btn btn-muted" onclick="setAcaoAtual('Revisar cotação')">Revisar cotação</button>
+        <button class="btn btn-red" onclick="openIndeferirModal()">Indeferir</button>
+        <div id="deleteBoxAtendimento" class="delete-manager-box hidden">
+          <div class="title">Área do gestor</div>
+          <button class="btn btn-red" onclick="deleteCurrentOpportunity()">Excluir solicitação</button>
+          <div class="small">Uso exclusivo para testes. Exclui a solicitação da base simulada.</div>
+        </div>
+        <div class="divider"></div>
+        <h3>Sequência do fluxo</h3>
+        <div class="flow-mini">
+          <div class="flow-step"><div class="step-title">1. Recebida</div><div class="step-action">Assumir</div></div>
+          <div class="flow-step"><div class="step-title">2. Atendimento</div><div class="step-action">ERP / Cotação</div></div>
+          <div class="flow-step"><div class="step-title">3. Fornecedor</div><div class="step-action">Cobrar / Registrar</div></div>
+          <div class="flow-step"><div class="step-title">4. Loja</div><div class="step-action">Responder</div></div>
+          <div class="flow-step"><div class="step-title">5. Compras</div><div class="step-action">Venda confirmada</div></div>
+        </div>
+        <div class="hint">A ação lateral altera a próxima ação. O campo no item apenas mostra o estágio atual.</div>
+      </aside>
+    </div>
+  </main>
+  <main id="screen-gestor" class="container hidden">
+    <div class="page-title">
+      <div><h1>Dashboard do Gestor</h1><p>Visão consolidada e acesso à mesma operação que o Lucas.</p></div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="atualizarDashboardGestor()">ATUALIZAR</button>
+        <button class="btn btn-light" onclick="show('clientes')">CLIENTES</button>
+        <button class="btn btn-light" onclick="show('estoque')">FOLLOW-UP DE ESTOQUE</button>
+        <button class="btn btn-light" onclick="show('lucas')">VER FILA OPERACIONAL</button>
+      </div>
+    </div>
+    <div class="kpi-note">
+      Dashboard executivo: visão resumida para diretoria. Os cards abaixo são a camada de decisão; os demais indicadores explicam a causa.
+    </div>
+    <div class="exec-grid">
+      <div class="card exec-card"><div class="exec-label">Oportunidades recebidas</div><div class="exec-value" id="execRecebidas">0</div></div>
+      <div class="card exec-card"><div class="exec-label">Tempo médio resposta</div><div class="exec-value">-</div></div>
+      <div class="card exec-card good"><div class="exec-label">SLA cumprido</div><div class="exec-value">-</div></div>
+      <div class="card exec-card good"><div class="exec-label">Conversão</div><div class="exec-value" id="execConversao">0%</div></div>
+      <div class="card exec-card warn"><div class="exec-label">Revisões</div><div class="exec-value" id="execRevisoes">0%</div></div>
+      <div class="card exec-card bad"><div class="exec-label">Indeferimentos</div><div class="exec-value" id="execIndeferimentos">0%</div></div>
+    </div>
+    <div class="grid5">
+      <div class="card kpi clickable" onclick="openDrill('Recebidas hoje', getByStatus('Recebida'))"><div class="kpi-label">Recebidas hoje</div><div class="kpi-value" id="kGestorRecebidas">0</div></div>
+      <div class="card kpi green clickable" onclick="openDrill('Respondidas', getByStatus('Respondida'))"><div class="kpi-label">Respondidas</div><div class="kpi-value" id="kGestorRespondidas">0</div></div>
+      <div class="card kpi clickable" onclick="openDrill('Encaminhadas', getByStatus('Encaminhada para Compras'))"><div class="kpi-label">Encaminhadas</div><div class="kpi-value" id="kGestorEncaminhadas">0</div></div>
+      <div class="card kpi orange clickable" onclick="openDrill('Em atendimento', getEmAtendimento())"><div class="kpi-label">Em atendimento</div><div class="kpi-value" id="kGestorAtendimento">0</div></div>
+      <div class="card kpi yellow clickable" onclick="openDrill('Aguardando loja', getByStatus('Aguardando decisão da loja'))"><div class="kpi-label">Aguardando loja</div><div class="kpi-value" id="kGestorAguardandoLoja">0</div></div>
+    </div>
+    <div class="grid5" style="margin-top:14px;margin-bottom:18px">
+      <div class="card kpi"><div class="kpi-label">1ª resposta</div><div class="kpi-value">-</div></div>
+      <div class="card kpi"><div class="kpi-label">Atendimento médio</div><div class="kpi-value">-</div></div>
+      <div class="card kpi green"><div class="kpi-label">Conversão</div><div class="kpi-value" id="kGestorConversao">0%</div></div>
+      <div class="card kpi orange clickable" onclick="openDrill('Revisões', getByStatus('Em revisão'))"><div class="kpi-label">Revisões</div><div class="kpi-value" id="kGestorRevisoes">0</div></div>
+      <div class="card kpi red clickable" onclick="openDrill('Indeferidas', getByStatus('Indeferida'))"><div class="kpi-label">Indeferidas</div><div class="kpi-value" id="kGestorIndeferidas">0</div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="card chart-card">
+        <div class="chart-title">Oportunidades por status</div>
+        <div class="bar-row"><div>Recebida</div><div class="bar-bg"><div class="bar-fill" style="width:18%"></div></div><b id="chartRecebida">0</b></div>
+        <div class="bar-row"><div>Em atendimento</div><div class="bar-bg"><div class="bar-fill orange" style="width:32%"></div></div><b id="chartAtendimento">0</b></div>
+        <div class="bar-row"><div>Aguardando fornecedor</div><div class="bar-bg"><div class="bar-fill red" style="width:22%"></div></div><b id="chartFornecedor">0</b></div>
+        <div class="bar-row"><div>Aguardando loja</div><div class="bar-bg"><div class="bar-fill yellow" style="width:16%"></div></div><b id="chartLoja">0</b></div>
+        <div class="bar-row"><div>Encaminhada</div><div class="bar-bg"><div class="bar-fill green" style="width:12%"></div></div><b id="chartCompras">0</b></div>
+      </div>
+      <div class="card chart-card">
+        <div class="chart-title">SLA por faixa</div>
+        <div class="donut-wrap">
+          <div class="donut"><div class="donut-center" id="donutTotal">0</div></div>
+          <div class="legend">
+            <div><span style="background:var(--verde)"></span>Verde: <b id="chartSlaVerde">0</b></div>
+            <div><span style="background:var(--laranja)"></span>Atenção: <b id="chartSlaAtencao">0</b></div>
+            <div><span style="background:var(--amarelo)"></span>Aguardando loja: <b id="chartSlaLoja">0</b></div>
+            <div><span style="background:var(--vermelho)"></span>Vermelho: <b id="chartSlaVermelho">0</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="card chart-card">
+        <div class="chart-title">Volume por filial</div>
+        <div id="chartVolumeFilial" class="item-empty">Sem dados ainda.</div>
+      </div>
+      <div class="card chart-card">
+        <div class="chart-title">Itens recorrentes fora do portfólio</div>
+        <div id="chartItensRecorrentes" class="item-empty">Sem dados ainda.</div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card panel">
+        <div class="section-title">SLA</div>
+        <div class="status-line"><span>Verde</span><b style="color:var(--verde)" id="kGestorSlaVerde">0</b></div>
+        <div class="status-line"><span>Atenção</span><b style="color:var(--laranja)" id="kGestorSlaAtencao">0</b></div>
+        <div class="status-line"><span>Vermelho</span><b style="color:var(--vermelho)" id="kGestorSlaVermelho">0</b></div>
+      </div>
+      <div class="card panel">
+        <div class="section-title">Gargalos por próxima ação</div>
+        <div class="status-line"><span><span class="list-link" onclick="openDrill('Cobrar fornecedor', getByAction('Cobrar fornecedor'))">Cobrar fornecedor</span></span><b id="kGargaloFornecedor">0</b></div>
+        <div class="status-line"><span><span class="list-link" onclick="openDrill('Responder loja', getByAction('Responder loja'))">Responder loja</span></span><b id="kGargaloResponder">0</b></div>
+        <div class="status-line"><span><span class="list-link" onclick="openDrill('Cadastro ERP', getByAction('Cadastrar ERP'))">Cadastro ERP</span></span><b id="kGargaloERP">0</b></div>
+        <div class="status-line"><span><span class="list-link" onclick="openDrill('Revisão', getByAction('Revisar cotação'))">Revisão</span></span><b id="kGargaloRevisao">0</b></div>
+      </div>
+    </div>
+  </main>
+  <main id="screen-estoque" class="container hidden">
+    <div class="page-title">
+      <div><h1>Follow-up de Estoque</h1><p>Itens cotados fora do portfólio com potencial para virar itens de estoque padrão.</p></div>
+      <div class="page-actions">
+        <button class="btn btn-light" onclick="exportarFollowUpEstoque()">EXPORTAR PARA COMPRAS</button>
+        <button class="btn btn-outline" onclick="show('gestor')">Voltar</button>
+      </div>
+    </div>
+    <div id="estoqueAlert" class="alert-box hidden"></div>
+    <div class="card panel">
+      <div class="section-title">Itens candidatos</div>
+      <table class="admin-table">
+        <thead><tr><th>Item</th><th>Cotações</th><th>Filiais</th><th>Último fornecedor</th><th>Último valor</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody id="estoqueBody"></tbody>
+      </table>
+    </div>
+  </main>
+  <main id="screen-clientes" class="container hidden">
+    <div class="page-title">
+      <div><h1>Clientes</h1><p>Acompanhamento de solicitações de cotação por cliente e risco de uso apenas como base de preço (comparação, sem fechar venda).</p></div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="show('gestor')">Voltar</button>
+      </div>
+    </div>
+    <div class="card panel">
+      <div class="section-title">Clientes</div>
+      <table class="admin-table">
+        <thead><tr><th>Cliente</th><th>CPF/CNPJ</th><th>Solicitações</th><th>Vendas confirmadas</th><th>Não fechou</th><th>Taxa de conversão</th><th>Risco</th></tr></thead>
+        <tbody id="clientesBody"></tbody>
+      </table>
+    </div>
+  </main>
+  <main id="screen-admin" class="container hidden">
+    <div class="page-title">
+      <div><h1>Administração</h1><p>Todas as filiais já ficam cadastradas. O gestor vincula cada usuário à filial solicitante, podendo ter dois ou mais usuários na mesma filial.</p></div>
+      <div class="page-actions">
+        <button class="btn btn-primary" onclick="openNovoUsuarioModal()">+ NOVO USUÁRIO</button>
+        <button class="btn btn-outline" onclick="show('gestor')">Voltar</button>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card panel">
+        <div class="section-title">Usuários</div>
+        <input class="search" id="adminUserSearch" placeholder="Buscar por login, nome ou filial..." oninput="renderAdminUsers()">
+        <div class="filter-pills" id="adminPerfilPills">
+          <button class="pill active" onclick="setAdminPerfilFilter('todos', this)">Todos os perfis</button>
+          <button class="pill" onclick="setAdminPerfilFilter('loja', this)">Loja</button>
+          <button class="pill" onclick="setAdminPerfilFilter('lucas', this)">Operação</button>
+          <button class="pill" onclick="setAdminPerfilFilter('gestor', this)">Gestor</button>
+        </div>
+        <div class="filter-pills" id="adminStatusPills">
+          <button class="pill active" onclick="setAdminStatusFilter('todos', this)">Todos os status</button>
+          <button class="pill" onclick="setAdminStatusFilter('ativo', this)">Ativos</button>
+          <button class="pill" onclick="setAdminStatusFilter('inativo', this)">Inativos</button>
+        </div>
+        <table class="admin-table">
+          <thead><tr><th>Login</th><th>Usuário</th><th>Perfil</th><th>Filial solicitante</th><th>Permissões</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody id="adminUsersBody"></tbody>
+        </table>
+      </div>
+      <div class="card panel">
+        <div class="section-title">Parâmetros SLA</div>
+        <div class="status-line"><span>Início</span><b>08:00</b></div>
+        <div class="status-line"><span>Intervalo</span><b>13:00 às 14:12</b></div>
+        <div class="status-line"><span>Fim</span><b>18:00</b></div>
+        <div class="status-line"><span>Vermelho</span><b>Acima de 4h úteis</b></div>
+      </div>
+    </div>
+  </main>
+</section>
+<div id="itemModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>Adicionar item(ns)</h2>
+    <div id="iModalContador" class="small muted hidden" style="margin-bottom:10px"></div>
+    <div class="field"><label>Descrição *</label><input id="iDesc" placeholder="Ex.: Cabo flexível 10mm"></div>
+    <div class="field"><label>Quantidade *</label><input id="iQtd" placeholder="Ex.: 120"></div>
+    <div class="grid2">
+      <div class="field"><label>Marca</label><input id="iMarca"></div>
+      <div class="field"><label>Referência</label><input id="iRef"></div>
+    </div>
+    <div class="field">
+      <label>Anexar PDF, planilha (Excel/CSV), print ou foto do item (opcional)</label>
+      <input type="file" id="iAnexo" accept="application/pdf,image/*,.csv,.xlsx,.xls,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple onchange="processarAnexoItem(event)">
+      <div id="iAnexoStatus" class="small muted" style="margin-top:6px">Envie um PDF, planilha (Excel/CSV), foto ou print do item — os itens serão adicionados automaticamente após a leitura.</div>
+      <div id="iAnexoExtras" class="small hidden" style="margin-top:6px"></div>
+    </div>
+    <div class="field"><label>Tipo técnico</label><select id="iTipo" onchange="toggleTecnico()"><option value="">Não informar</option><option value="cabos">Fios e Cabos</option><option value="automacao">Automação</option><option value="iluminacao">Iluminação</option></select></div>
+    <div id="tecnicoBox" class="hidden card" style="padding:14px;margin-bottom:14px"></div>
+    <div class="footer-actions"><button class="btn btn-outline" onclick="closeItemModal()">Fechar</button><button class="btn btn-primary" onclick="addItem()">+ ADICIONAR E CONTINUAR</button></div>
+  </div>
+</div>
+<div id="passwordModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>Trocar senha</h2>
+    <div class="field"><label>Senha atual</label><input type="password" id="pwdAtual"></div>
+    <div class="field"><label>Nova senha</label><input type="password" id="pwdNova"></div>
+    <div class="field"><label>Confirmar nova senha</label><input type="password" id="pwdConf"></div>
+    <div class="footer-actions"><button class="btn btn-outline" onclick="closePasswordModal()">Cancelar</button><button class="btn btn-primary" onclick="savePassword()">Salvar</button></div>
+  </div>
+</div>
+<div id="resetModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>Resetar senha</h2>
+    <p id="resetUserLabel" class="muted"></p>
+    <div class="field"><label>Senha provisória</label><input type="password" id="resetNova"></div>
+    <div class="field"><label>Confirmar senha</label><input type="password" id="resetConf"></div>
+    <div class="footer-actions"><button class="btn btn-outline" onclick="closeResetModal()">Cancelar</button><button class="btn btn-primary" onclick="saveReset()">Resetar</button></div>
+  </div>
+</div>
+<div id="renameModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>Renomear usuário</h2>
+    <p id="renameUserLabel" class="muted"></p>
+    <div class="field"><label>Novo nome do usuário</label><input id="renameNovoNome" placeholder="Ex.: Maria Silva"></div>
+    <div class="footer-actions"><button class="btn btn-outline" onclick="closeRenameModal()">Cancelar</button><button class="btn btn-primary" onclick="saveRename()">Salvar</button></div>
+  </div>
+</div>
+<div id="novoUsuarioModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>Novo usuário</h2>
+    <div class="field"><label>Nome do usuário</label><input id="novoUserNome" placeholder="Ex.: Maria Silva" oninput="atualizarPreviaLogin()"></div>
+    <div class="field">
+      <label>Login de acesso (gerado automaticamente pelo nome)</label>
+      <div id="novoUserLoginPreview" class="locked-field">—</div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Perfil</label><select id="novoUserPerfil"><option>Loja</option><option>Operação</option><option>Gestor</option><option>Apoio</option></select></div>
+      <div class="field"><label>Filial solicitante padrão</label><select id="novoUserFilial">
+<option>Matriz - Maringá</option>
+<option>Sarandi</option>
+<option>Cianorte</option>
+<option>Campo Mourão</option>
+<option>Umuarama</option>
+<option>Apucarana</option>
+<option>Centro de Distribuição - CD</option>
+<option>Exceleds</option>
+<option>Foco - CD</option>
+<option>Londrina</option>
+<option>Maringá 02</option>
+<option>Ponta Grossa</option>
+<option>Presidente Prudente</option>
+<option>Central</option>
+</select></div>
+      <div class="field"><label>Senha provisória</label><input id="novoUserSenha" type="password"></div>
+    </div>
+    <div class="footer-actions"><button class="btn btn-outline" onclick="closeNovoUsuarioModal()">Cancelar</button><button class="btn btn-primary" onclick="saveNovoUsuario()">Cadastrar usuário</button></div>
+  </div>
+</div>
+<div id="cancelModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>Cancelar oportunidade</h2>
+    <div class="field"><label>Motivo *</label><select><option>Cliente desistiu</option><option>Solicitação duplicada</option><option>Aberta por engano</option><option>Cancelada pela loja</option><option>Outro</option></select></div>
+    <div class="field"><label>Justificativa</label><textarea></textarea></div>
+    <div class="footer-actions"><button class="btn btn-outline" onclick="closeCancelModal()">Voltar</button><button class="btn btn-red" onclick="confirmCancel()">Confirmar</button></div>
+  </div>
+</div>
+<div id="indeferirModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>Indeferir solicitação</h2>
+    <div class="field"><label>Motivo *</label><select><option>Fora do segmento</option><option>Informações insuficientes</option><option>Item já pertence ao portfólio</option><option>Solicitação duplicada</option><option>Cancelada pela loja</option><option>Outro</option></select></div>
+    <div class="field"><label>Justificativa</label><textarea></textarea></div>
+    <div class="footer-actions"><button class="btn btn-outline" onclick="closeIndeferirModal()">Voltar</button><button class="btn btn-red" onclick="confirmIndeferir()">Indeferir</button></div>
+  </div>
+</div>
+<div id="permissoesModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>Permissões do usuário</h2>
+    <div class="profile-hint" id="permUserLabel"></div>
+    <div class="perm-group-title">Loja</div>
+    <div class="perm-grid">
+      <label class="perm-item"><input type="checkbox" id="perm_abrir"> Abrir oportunidade</label>
+      <label class="perm-item"><input type="checkbox" id="perm_consultar_proprias"> Consultar próprias oportunidades</label>
+      <label class="perm-item"><input type="checkbox" id="perm_confirmar_venda"> Confirmar venda</label>
+      <label class="perm-item"><input type="checkbox" id="perm_solicitar_revisao"> Solicitar revisão</label>
+      <label class="perm-item"><input type="checkbox" id="perm_cancelar"> Cancelar oportunidade</label>
+      <label class="perm-item"><input type="checkbox" id="perm_nao_fechou"> Informar venda não fechada</label>
+    </div>
+    <div class="perm-group-title">Operação</div>
+    <div class="perm-grid">
+      <label class="perm-item"><input type="checkbox" id="perm_fila"> Acessar fila operacional</label>
+      <label class="perm-item"><input type="checkbox" id="perm_assumir"> Assumir oportunidade</label>
+      <label class="perm-item"><input type="checkbox" id="perm_cotar"> Registrar cotação/retorno</label>
+      <label class="perm-item"><input type="checkbox" id="perm_responder"> Responder loja</label>
+      <label class="perm-item"><input type="checkbox" id="perm_indeferir"> Indeferir solicitação</label>
+      <label class="perm-item"><input type="checkbox" id="perm_excluir"> Excluir solicitação de teste</label>
+    </div>
+    <div class="perm-group-title">Gestão e parâmetros</div>
+    <div class="perm-grid">
+      <label class="perm-item"><input type="checkbox" id="perm_dashboard"> Acessar dashboards</label>
+      <label class="perm-item"><input type="checkbox" id="perm_usuarios"> Cadastrar usuário</label>
+      <label class="perm-item"><input type="checkbox" id="perm_resetar"> Resetar senha</label>
+      <label class="perm-item"><input type="checkbox" id="perm_inativar"> Inativar/retirar usuário</label>
+      <label class="perm-item"><input type="checkbox" id="perm_sla"> Configurar SLA/parâmetros</label>
+      <label class="perm-item"><input type="checkbox" id="perm_todas_filiais"> Visualizar todas as filiais</label>
+    </div>
+    <div class="footer-actions">
+      <button class="btn btn-outline" onclick="closePermissoesModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePermissoes()">Salvar permissões</button>
+    </div>
+  </div>
+</div>
+<div id="drillModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2 id="drillTitle">Detalhamento</h2>
+    <div id="drillBody"></div>
+    <div class="footer-actions"><button class="btn btn-outline" onclick="closeDrill()">Fechar</button></div>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
