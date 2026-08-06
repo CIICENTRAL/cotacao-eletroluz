@@ -15,7 +15,7 @@
 // ---------------------------------------------------------------------
 const SUPABASE_URL = "https://bhqqmzhdfvqwtvhazwxf.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJocXFtemhkZnZxd3R2aGF6d3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMzI5NjAsImV4cCI6MjEwMTYwODk2MH0.vH5JftbRH4DJYXHzf3ksKPQ7fYXthsiawrPMky7-FYI";
-const DOMINIO_LOGIN = "eletroluz.local"; // usado só para montar o e-mail interno do Auth (login@eletroluz.local)
+const DOMINIO_LOGIN = "eletroluz.net"; // usado só para montar o e-mail interno do Auth (login@eletroluz.local)
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
