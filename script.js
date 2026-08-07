@@ -1010,8 +1010,22 @@ async function renderAdminUsers(){
         <button class="btn btn-outline" onclick="openRenameModal('${u.id}')">Renomear</button>
         <button class="btn btn-outline" onclick="openResetModal('${u.id}')">Resetar senha</button>
         <button class="btn ${u.ativo?'btn-red':'btn-green'}" onclick="alternarAtivoUsuario('${u.id}', ${!u.ativo})">${u.ativo?'Inativar':'Ativar'}</button>
+        ${currentUser && u.id!==currentUser.id ? `<button class="btn btn-red" title="Excluir usuário" onclick="confirmarExclusaoUsuario('${u.id}')">🗑️ Excluir</button>` : ''}
       </td>
     </tr>`).join('') || '<tr><td colspan="7">Nenhum usuário encontrado.</td></tr>';
+}
+
+// Exclusão definitiva de usuário (login + perfil). Usa a mesma permissão
+// de "Inativar/retirar usuário" já existente, para não precisar criar uma
+// nova permissão no modal de Permissões.
+async function confirmarExclusaoUsuario(userId){
+  const u = profilesCache.find(p=>p.id===userId);
+  const rotulo = u ? `${u.nome} (${u.login})` : 'este usuário';
+  if(!confirm(`Tem certeza que deseja EXCLUIR definitivamente ${rotulo}?\n\nEssa ação não pode ser desfeita: o login de acesso e o cadastro serão removidos.`)) return;
+  const resultado = await chamarAdminUsers({ acao:'excluir_usuario', user_id:userId });
+  if(!resultado) return;
+  alert('Usuário excluído com sucesso.');
+  renderAdminUsers();
 }
 function setAdminPerfilFilter(perfil, botao){
   adminPerfilFilterAtual = perfil;
