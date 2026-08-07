@@ -17,7 +17,7 @@ const SUPABASE_URL = "https://bhqqmzhdfvqwtvhazwxf.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJocXFtemhkZnZxd3R2aGF6d3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMzI5NjAsImV4cCI6MjEwMTYwODk2MH0.vH5JftbRH4DJYXHzf3ksKPQ7fYXthsiawrPMky7-FYI";
 const DOMINIO_LOGIN = "eletroluz.net"; // usado só para montar o e-mail interno do Auth (login@eletroluz.local)
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ---------------------------------------------------------------------
 // 1) ESTADO GLOBAL (em memória, recarregado do Supabase a cada ação)
@@ -71,7 +71,7 @@ async function doLogin(){
 
   const email = loginDigitado.includes('@') ? loginDigitado : `${loginDigitado.toLowerCase()}@${DOMINIO_LOGIN}`;
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: senha });
   if(error){
     alert('Usuário ou senha inválidos.');
     return;
@@ -80,20 +80,20 @@ async function doLogin(){
 }
 
 async function carregarSessaoAtual(){
-  const { data: sessionData } = await supabase.auth.getSession();
+  const { data: sessionData } = await supabaseClient.auth.getSession();
   if(!sessionData || !sessionData.session){ mostrarTelaLogin(); return; }
 
   const userId = sessionData.session.user.id;
-  const { data: perfil, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+  const { data: perfil, error } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
   if(error || !perfil){
     alert('Não encontramos seu perfil de acesso. Fale com o administrador do sistema.');
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     mostrarTelaLogin();
     return;
   }
   if(!perfil.ativo){
     alert('Seu usuário está inativo. Fale com o administrador.');
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     mostrarTelaLogin();
     return;
   }
@@ -122,7 +122,7 @@ function mostrarTelaLogin(){
 }
 
 async function logout(){
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   mostrarTelaLogin();
 }
 
@@ -157,7 +157,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 // 4) CARREGAMENTO DE DADOS (Supabase)
 // ---------------------------------------------------------------------
 async function carregarOportunidades(){
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('oportunidades')
     .select(`*, itens(*), fornecedores_cotados(*), historico(*), arquivos_projeto(*)`)
     .order('criado_em', { ascending: false });
@@ -166,7 +166,7 @@ async function carregarOportunidades(){
 }
 
 async function registrarHistorico(oportunidadeId, acao, detalhe){
-  await supabase.from('historico').insert({
+  await supabaseClient.from('historico').insert({
     oportunidade_id: oportunidadeId,
     autor: currentUser ? currentUser.nome : 'Sistema',
     acao, detalhe: detalhe||null
@@ -174,7 +174,7 @@ async function registrarHistorico(oportunidadeId, acao, detalhe){
 }
 
 async function atualizarOportunidade(id, campos){
-  const { error } = await supabase.from('oportunidades').update(campos).eq('id', id);
+  const { error } = await supabaseClient.from('oportunidades').update(campos).eq('id', id);
   if(error){ alert('Erro ao salvar: '+error.message); return false; }
   await carregarOportunidades();
   return true;
@@ -279,10 +279,10 @@ async function savePassword(){
 
   // Revalida a senha atual antes de trocar (evita que alguém com a sessão aberta troque sem saber a senha atual)
   const email = `${currentUser.login}@${DOMINIO_LOGIN}`;
-  const { error: erroValidacao } = await supabase.auth.signInWithPassword({ email, password: atual });
+  const { error: erroValidacao } = await supabaseClient.auth.signInWithPassword({ email, password: atual });
   if(erroValidacao){ alert('Senha atual incorreta.'); return; }
 
-  const { error } = await supabase.auth.updateUser({ password: nova });
+  const { error } = await supabaseClient.auth.updateUser({ password: nova });
   if(error){ alert('Erro ao trocar senha: '+error.message); return; }
   alert('Senha alterada com sucesso.');
   closePasswordModal();
@@ -478,7 +478,7 @@ async function sendOpportunity(){
 
   const prioridade = document.querySelector('input[name="prio"]:checked').value;
 
-  const { data: novaOp, error } = await supabase.from('oportunidades').insert({
+  const { data: novaOp, error } = await supabaseClient.from('oportunidades').insert({
     filial, cliente,
     cpf_cnpj: document.getElementById('nCpfCnpj').value.trim() || null,
     vendedor: document.getElementById('nVendedor').value.trim() || null,
@@ -492,14 +492,14 @@ async function sendOpportunity(){
 
   if(tipo==='item'){
     const linhas = itensDraft.map(it=>({ ...it, oportunidade_id: novaOp.id }));
-    const { error: erroItens } = await supabase.from('itens').insert(linhas);
+    const { error: erroItens } = await supabaseClient.from('itens').insert(linhas);
     if(erroItens) alert('Oportunidade criada, mas houve erro ao salvar os itens: '+erroItens.message);
   } else {
     // Observação: o upload real dos arquivos de projeto para o Supabase Storage é o próximo passo
     // de configuração (veja SETUP.md). Por ora, guardamos apenas o nome dos arquivos selecionados.
     if(projetoArquivosDraft.length){
       const linhas = projetoArquivosDraft.map(f=>({ oportunidade_id: novaOp.id, nome: f.name, url: '' }));
-      await supabase.from('arquivos_projeto').insert(linhas);
+      await supabaseClient.from('arquivos_projeto').insert(linhas);
     }
   }
 
@@ -746,7 +746,7 @@ async function adicionarFornecedorCotado(){
   const valor = prompt('Valor cotado:') || '';
   const prazo = prompt('Prazo de entrega:') || '';
   const condicao = prompt('Condição de pagamento:') || '';
-  await supabase.from('fornecedores_cotados').insert({ oportunidade_id: op.id, fornecedor, valor, prazo, condicao });
+  await supabaseClient.from('fornecedores_cotados').insert({ oportunidade_id: op.id, fornecedor, valor, prazo, condicao });
   await registrarHistorico(op.id, 'Cotação registrada', `${fornecedor} — ${valor}`);
   await carregarOportunidades();
   abrirAtendimento(op.id);
@@ -768,7 +768,7 @@ async function confirmIndeferir(){
 async function deleteCurrentOpportunity(){
   if(!currentUser.permissoes.perm_excluir){ alert('Você não tem permissão para excluir.'); return; }
   if(!confirm('Excluir esta solicitação de teste? Essa ação não pode ser desfeita.')) return;
-  const { error } = await supabase.from('oportunidades').delete().eq('id', currentOpportunityId);
+  const { error } = await supabaseClient.from('oportunidades').delete().eq('id', currentOpportunityId);
   if(error){ alert('Erro ao excluir: '+error.message); return; }
   await carregarOportunidades();
   show(currentUser.perfil==='loja' ? 'loja' : 'lucas');
@@ -910,7 +910,7 @@ function renderClientes(){
 // roda no servidor do Supabase com a service_role key protegida.
 // ---------------------------------------------------------------------
 async function renderAdminUsers(){
-  const { data, error } = await supabase.from('profiles').select('*').order('nome');
+  const { data, error } = await supabaseClient.from('profiles').select('*').order('nome');
   if(error){ alert('Erro ao carregar usuários: '+error.message); return; }
   profilesCache = data || [];
 
@@ -950,7 +950,7 @@ function setAdminStatusFilter(status, botao){
 
 // Chamada padrão para a Edge Function de administração
 async function chamarAdminUsers(payload){
-  const { data, error } = await supabase.functions.invoke('admin-users', { body: payload });
+  const { data, error } = await supabaseClient.functions.invoke('admin-users', { body: payload });
   if(error){ alert('Erro: '+(error.message||error)); return null; }
   if(data && data.error){ alert('Erro: '+data.error); return null; }
   return data;
@@ -1028,7 +1028,7 @@ function closeRenameModal(){ document.getElementById('renameModal').classList.ad
 async function saveRename(){
   const novoNome = document.getElementById('renameNovoNome').value.trim();
   if(!novoNome){ alert('Informe o novo nome.'); return; }
-  const { error } = await supabase.from('profiles').update({ nome: novoNome }).eq('id', adminUsuarioSelecionadoId);
+  const { error } = await supabaseClient.from('profiles').update({ nome: novoNome }).eq('id', adminUsuarioSelecionadoId);
   if(error){ alert('Erro: '+error.message); return; }
   closeRenameModal();
   renderAdminUsers();
@@ -1056,7 +1056,7 @@ function closePermissoesModal(){ document.getElementById('permissoesModal').clas
 async function savePermissoes(){
   const permissoes = {};
   TODAS_PERMS.forEach(p=>{ permissoes[p] = document.getElementById(p).checked; });
-  const { error } = await supabase.from('profiles').update({ permissoes }).eq('id', adminUsuarioSelecionadoId);
+  const { error } = await supabaseClient.from('profiles').update({ permissoes }).eq('id', adminUsuarioSelecionadoId);
   if(error){ alert('Erro: '+error.message); return; }
   closePermissoesModal();
   renderAdminUsers();
