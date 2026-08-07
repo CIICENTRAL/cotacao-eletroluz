@@ -63,6 +63,7 @@ label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}
 
 .login-box{width:460px;padding:34px;position:relative;z-index:1}
 .login-brand{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:24px}
+.login-logo{position:absolute;top:24px;left:24px}
 .login-title{font-size:25px;font-weight:900;color:var(--azul);line-height:1.05}
 .login-sub{font-size:13px;color:var(--muted);font-weight:700;margin-top:4px}
 .help{background:#F8FAFC;border:1px solid var(--borda);border-radius:12px;padding:12px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5}
@@ -488,8 +489,8 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
 <body>
 <section id="login" class="login">
   <div class="login-box card">
+    <img src="logo-eletroluz.png" alt="Eletroluz" class="el-logo login-logo" style="border-radius:10px" onerror="this.style.display='none'">
     <div class="login-brand">
-      <img src="logo-eletroluz.png" alt="Eletroluz" class="el-logo" style="border-radius:10px" onerror="this.style.display='none'">
       <div>
         <div class="login-title">Cotação</div>
       </div>
