@@ -130,7 +130,7 @@ label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}
 .timeline-item:last-child{border-bottom:0}
 .status-line{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--borda)}
 .status-line:last-child{border-bottom:0}
-.columns{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px}
+.columns{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
 .column{padding:16px;min-height:330px}
 .column h3{margin:0 0 12px;color:var(--azul);font-size:16px}
 .task{border:1px solid var(--borda);border-radius:12px;background:#FBFCFE;padding:13px;margin-bottom:10px;cursor:grab;transition:.15s ease}
@@ -160,6 +160,7 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
 .column.andamento-col{border-top:6px solid var(--azul);background:linear-gradient(180deg,#F4F7FF 0%,#FFFFFF 46%)}
 .column.loja-col{border-top:6px solid var(--azul-escuro);background:linear-gradient(180deg,#EEF2F9 0%,#FFFFFF 46%)}
 .column.fornecedor-col{border-top:6px solid var(--vermelho);background:linear-gradient(180deg,#F4F7FF 0%,#FFFFFF 46%)}
+.column.finalizado-col{border-top:6px solid var(--verde);background:linear-gradient(180deg,#F0FBF3 0%,#FFFFFF 46%)}
 .flow-step{
   border:1px solid var(--borda);
   border-radius:12px;
@@ -488,6 +489,7 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
 <section id="login" class="login">
   <div class="login-box card">
     <div class="login-brand">
+      <img src="logo-eletroluz.png" alt="Eletroluz" class="el-logo" style="border-radius:10px" onerror="this.style.display='none'">
       <div>
         <div class="login-title">Cotação</div>
       </div>
@@ -495,6 +497,9 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
     <div class="field"><label>Usuário</label><input id="loginUser" placeholder="Digite seu usuário"></div>
     <div class="field"><label>Senha</label><input id="loginPass" type="password" placeholder="Digite sua senha"></div>
     <button class="btn btn-primary" style="width:100%" onclick="doLogin()">ENTRAR</button>
+    <div style="text-align:center;margin-top:14px">
+      <a href="javascript:void(0)" onclick="openForgotModal()" style="color:var(--azul);font-weight:800;font-size:13px;text-decoration:underline">Esqueci minha senha</a>
+    </div>
   </div>
 </section>
 <section id="app" class="hidden">
@@ -691,12 +696,14 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
       <button class="pill" onclick="setLucasFilter('andamento', this)">Em andamento</button>
       <button class="pill" onclick="setLucasFilter('loja', this)">Aguardando loja</button>
       <button class="pill" onclick="setLucasFilter('fornecedor', this)">Aguardando fornecedor</button>
+      <button class="pill" onclick="setLucasFilter('finalizado', this)">Finalizado</button>
     </div>
     <div class="columns">
       <div class="card column fila-col"><h3>Na fila</h3><div id="lucasFila"></div></div>
       <div class="card column andamento-col"><h3>Em atendimento</h3><div id="lucasAndamento"></div></div>
       <div class="card column fornecedor-col"><h3>Aguardando fornecedor</h3><div id="lucasFornecedor"></div></div>
       <div class="card column loja-col"><h3>Aguardando loja</h3><div id="lucasLoja"></div></div>
+      <div class="card column finalizado-col"><h3>Finalizado</h3><div id="lucasFinalizado"></div></div>
     </div>
   </main>
   <main id="screen-atendimento" class="container hidden">
@@ -947,6 +954,23 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
     <div class="field"><label>Tipo técnico</label><select id="iTipo" onchange="toggleTecnico()"><option value="">Não informar</option><option value="cabos">Fios e Cabos</option><option value="automacao">Automação</option><option value="iluminacao">Iluminação</option></select></div>
     <div id="tecnicoBox" class="hidden card" style="padding:14px;margin-bottom:14px"></div>
     <div class="footer-actions"><button class="btn btn-outline" onclick="closeItemModal()">Fechar</button><button class="btn btn-primary" onclick="addItem()">+ ADICIONAR E CONTINUAR</button></div>
+  </div>
+</div>
+<div id="forgotModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>Esqueci minha senha</h2>
+    <p class="muted small">Informe seu usuário. Se ele existir, enviaremos um e-mail (para o seu e-mail corporativo @eletroluz.net) com um link para criar uma nova senha.</p>
+    <div class="field"><label>Usuário</label><input id="forgotUser" placeholder="Digite seu usuário"></div>
+    <div class="footer-actions"><button class="btn btn-outline" onclick="closeForgotModal()">Cancelar</button><button class="btn btn-primary" onclick="sendForgotPassword()">Enviar e-mail</button></div>
+  </div>
+</div>
+<div id="recoveryModal" class="modal-bg hidden">
+  <div class="modal">
+    <h2>Criar nova senha</h2>
+    <p class="muted small">Você acessou pelo link de recuperação de senha enviado por e-mail. Defina abaixo sua nova senha de acesso.</p>
+    <div class="field"><label>Nova senha</label><input type="password" id="recoveryNova"></div>
+    <div class="field"><label>Confirmar nova senha</label><input type="password" id="recoveryConf"></div>
+    <div class="footer-actions"><button class="btn btn-outline" onclick="cancelRecoveryPassword()">Cancelar</button><button class="btn btn-primary" onclick="saveRecoveryPassword()">Salvar nova senha</button></div>
   </div>
 </div>
 <div id="passwordModal" class="modal-bg hidden">
