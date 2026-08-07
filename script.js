@@ -20,6 +20,24 @@ const DOMINIO_LOGIN = "eletroluz.net"; // usado só para montar o e-mail interno
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ---------------------------------------------------------------------
+// 0.1) RECUPERAÇÃO DE SENHA ("Esqueci minha senha")
+// -----------------------------------------------------------------------
+// Quando o usuário clica no link recebido por e-mail, o Supabase Auth
+// abre esta mesma página com um token de recuperação e dispara o evento
+// 'PASSWORD_RECOVERY'. Esse registro precisa existir ANTES de qualquer
+// outra coisa rodar, para não deixar a tela carregar o app normalmente
+// enquanto o usuário ainda precisa definir a nova senha.
+// ---------------------------------------------------------------------
+let recuperandoSenha = false;
+supabaseClient.auth.onAuthStateChange((event)=>{
+  if(event === 'PASSWORD_RECOVERY'){
+    recuperandoSenha = true;
+    const modal = document.getElementById('recoveryModal');
+    if(modal) modal.classList.remove('hidden');
+  }
+});
+
+// ---------------------------------------------------------------------
 // 1) ESTADO GLOBAL (em memória, recarregado do Supabase a cada ação)
 // ---------------------------------------------------------------------
 let currentUser = null;        // { id, login, nome, perfil, filial_padrao, permissoes, ativo }
@@ -79,7 +97,51 @@ async function doLogin(){
   await carregarSessaoAtual();
 }
 
+// --- Esqueci minha senha ---
+function openForgotModal(){
+  document.getElementById('forgotUser').value = '';
+  document.getElementById('forgotModal').classList.remove('hidden');
+}
+function closeForgotModal(){ document.getElementById('forgotModal').classList.add('hidden'); }
+
+async function sendForgotPassword(){
+  const loginDigitado = (document.getElementById('forgotUser').value||'').trim();
+  if(!loginDigitado){ alert('Informe seu usuário.'); return; }
+  const email = loginDigitado.includes('@') ? loginDigitado : `${loginDigitado.toLowerCase()}@${DOMINIO_LOGIN}`;
+
+  await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname
+  });
+  // Por segurança, não informamos se o usuário existe ou não — a mensagem é sempre a mesma.
+  closeForgotModal();
+  alert('Se o usuário existir, enviamos um e-mail com o link para criar uma nova senha.');
+}
+
+async function saveRecoveryPassword(){
+  const nova = document.getElementById('recoveryNova').value;
+  const conf = document.getElementById('recoveryConf').value;
+  if(!nova || !conf){ alert('Preencha os dois campos.'); return; }
+  if(nova !== conf){ alert('As senhas não coincidem.'); return; }
+  if(nova.length < 8){ alert('A nova senha deve ter pelo menos 8 caracteres.'); return; }
+
+  const { error } = await supabaseClient.auth.updateUser({ password: nova });
+  if(error){ alert('Erro ao salvar nova senha: '+error.message); return; }
+
+  document.getElementById('recoveryModal').classList.add('hidden');
+  recuperandoSenha = false;
+  alert('Senha alterada com sucesso! Você já está conectado.');
+  await carregarSessaoAtual();
+}
+
+async function cancelRecoveryPassword(){
+  await supabaseClient.auth.signOut();
+  recuperandoSenha = false;
+  document.getElementById('recoveryModal').classList.add('hidden');
+  mostrarTelaLogin();
+}
+
 async function carregarSessaoAtual(){
+  if(recuperandoSenha) return; // aguarda o usuário definir a nova senha antes de carregar o app
   const { data: sessionData } = await supabaseClient.auth.getSession();
   if(!sessionData || !sessionData.session){ mostrarTelaLogin(); return; }
 
@@ -586,14 +648,30 @@ function ordenarPrioridadeFila(a,b){
 }
 
 function renderLucas(){
+  // Botão "Voltar ao dashboard" só faz sentido para quem tem dashboard (perm_dashboard).
+  // Um usuário de Operação puro (sem essa permissão) cai direto na Fila Operacional
+  // como tela inicial, então não há "dashboard" para voltar.
+  const btnVoltarDashboard = document.getElementById('backDashboardBtn');
+  if(btnVoltarDashboard){
+    const temDashboard = !!(currentUser && currentUser.permissoes && currentUser.permissoes.perm_dashboard);
+    btnVoltarDashboard.classList.toggle('hidden', !temDashboard);
+  }
+
+  // lista: usada nos KPIs/gráficos "em aberto" — comportamento idêntico ao que já existia
+  // (Finalizada continua fora das métricas de fila em aberto).
   let lista = visibleOpps().filter(o=>!['Cancelada','Indeferida','Finalizada'].includes(o.status));
+  // listaComFinalizadas: mesma coisa, mas incluindo os itens Finalizados — usada apenas
+  // para alimentar as colunas do quadro (para a coluna "Finalizado" ter o que mostrar).
+  let listaComFinalizadas = visibleOpps().filter(o=>!['Cancelada','Indeferida'].includes(o.status));
+
   const filtros = {
     fila: o=>o.status==='Recebida',
     andamento: o=>['Em atendimento','Em revisão'].includes(o.status),
     loja: o=>o.status==='Aguardando decisão da loja',
-    fornecedor: o=>o.status==='Aguardando fornecedor'
+    fornecedor: o=>o.status==='Aguardando fornecedor',
+    finalizado: o=>o.status==='Finalizada'
   };
-  const listaFiltrada = lucasFilterAtual==='todos' ? lista : lista.filter(filtros[lucasFilterAtual]);
+  const listaFiltrada = lucasFilterAtual==='todos' ? listaComFinalizadas : listaComFinalizadas.filter(filtros[lucasFilterAtual]);
 
   document.getElementById('kLucasRecebidas').textContent = lista.filter(filtros.fila).length;
   document.getElementById('kLucasRespondidas').textContent = visibleOpps().filter(o=>o.status==='Respondida').length;
@@ -611,7 +689,7 @@ function renderLucas(){
     document.getElementById(id).textContent = lista.filter(o=>o.prioridade===p).length;
   });
 
-  const colunas = { lucasFila: filtros.fila, lucasAndamento: filtros.andamento, lucasFornecedor: filtros.fornecedor, lucasLoja: filtros.loja };
+  const colunas = { lucasFila: filtros.fila, lucasAndamento: filtros.andamento, lucasFornecedor: filtros.fornecedor, lucasLoja: filtros.loja, lucasFinalizado: filtros.finalizado };
   Object.entries(colunas).forEach(([elId, fn])=>{
     const itens = listaFiltrada.filter(fn).sort(ordenarPrioridadeFila);
     const el = document.getElementById(elId);
@@ -630,7 +708,7 @@ function renderLucas(){
       e.preventDefault(); col.classList.remove('drop-hover');
       const id = e.dataTransfer.getData('text/plain');
       const destino = col.querySelector('[id^="lucas"]')?.id;
-      const statusPorColuna = { lucasFila:'Recebida', lucasAndamento:'Em atendimento', lucasFornecedor:'Aguardando fornecedor', lucasLoja:'Aguardando decisão da loja' };
+      const statusPorColuna = { lucasFila:'Recebida', lucasAndamento:'Em atendimento', lucasFornecedor:'Aguardando fornecedor', lucasLoja:'Aguardando decisão da loja', lucasFinalizado:'Finalizada' };
       if(destino && statusPorColuna[destino]){
         await atualizarOportunidade(id, { status: statusPorColuna[destino] });
         await registrarHistorico(id, 'Status alterado via fila', statusPorColuna[destino]);
