@@ -989,6 +989,25 @@ function renderClientes(){
 // ---------------------------------------------------------------------
 const ICONE_LIXEIRA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
 
+// Menu "⋯" de ações secundárias da tabela de usuários (Renomear, Resetar
+// senha, Ativar/Inativar, Excluir), para reduzir a poluição visual de
+// vários botões lado a lado.
+function toggleUserActionsMenu(event, userId){
+  event.stopPropagation();
+  document.querySelectorAll('.actions-menu-panel').forEach(painel=>{
+    if(painel.id !== 'actionsMenu-'+userId) painel.classList.add('hidden');
+  });
+  document.getElementById('actionsMenu-'+userId)?.classList.toggle('hidden');
+}
+function fecharUserActionsMenu(userId){
+  document.getElementById('actionsMenu-'+userId)?.classList.add('hidden');
+}
+document.addEventListener('click', (e)=>{
+  document.querySelectorAll('.actions-menu-panel:not(.hidden)').forEach(painel=>{
+    if(!painel.parentElement.contains(e.target)) painel.classList.add('hidden');
+  });
+});
+
 async function renderAdminUsers(){
   const { data, error } = await supabaseClient.from('profiles').select('*').order('nome');
   if(error){ alert('Erro ao carregar usuários: '+error.message); return; }
@@ -1008,11 +1027,16 @@ async function renderAdminUsers(){
       <td>${escapeHtml(u.filial_padrao||'-')}</td>
       <td><button class="btn btn-light" onclick="openPermissoesModal('${u.id}')">Ver/editar</button></td>
       <td><span class="user-status ${u.ativo?'active':'inactive'}">${u.ativo?'Ativo':'Inativo'}</span></td>
-      <td class="admin-actions">
-        <button class="btn btn-outline" onclick="openRenameModal('${u.id}')">Renomear</button>
-        <button class="btn btn-outline" onclick="openResetModal('${u.id}')">Resetar senha</button>
-        <button class="btn ${u.ativo?'btn-red':'btn-green'}" onclick="alternarAtivoUsuario('${u.id}', ${!u.ativo})">${u.ativo?'Inativar':'Ativar'}</button>
-        ${currentUser && u.id!==currentUser.id ? `<button class="btn btn-danger-outline" title="Excluir usuário" onclick="confirmarExclusaoUsuario('${u.id}')">${ICONE_LIXEIRA} Excluir</button>` : '<span></span>'}
+      <td>
+        <div class="actions-menu">
+          <button class="btn-kebab" title="Mais ações" onclick="toggleUserActionsMenu(event,'${u.id}')">⋯</button>
+          <div class="actions-menu-panel hidden" id="actionsMenu-${u.id}">
+            <button onclick="fecharUserActionsMenu('${u.id}'); openRenameModal('${u.id}')">Renomear</button>
+            <button onclick="fecharUserActionsMenu('${u.id}'); openResetModal('${u.id}')">Resetar senha</button>
+            <button onclick="fecharUserActionsMenu('${u.id}'); alternarAtivoUsuario('${u.id}', ${!u.ativo})">${u.ativo?'Inativar':'Ativar'}</button>
+            ${currentUser && u.id!==currentUser.id ? `<button class="danger" onclick="fecharUserActionsMenu('${u.id}'); confirmarExclusaoUsuario('${u.id}')">${ICONE_LIXEIRA} Excluir</button>` : ''}
+          </div>
+        </div>
       </td>
     </tr>`).join('') || '<tr><td colspan="7">Nenhum usuário encontrado.</td></tr>';
 }
