@@ -988,6 +988,10 @@ function renderClientes(){
 // roda no servidor do Supabase com a service_role key protegida.
 // ---------------------------------------------------------------------
 const ICONE_LIXEIRA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
+const ICONE_RENOMEAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>';
+const ICONE_CHAVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"></path><path d="m21 2-9.6 9.6"></path><circle cx="7.5" cy="15.5" r="5.5"></circle></svg>';
+const ICONE_PAUSE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line></svg>';
+const ICONE_PLAY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>';
 
 // Menu "⋯" de ações secundárias da tabela de usuários (Renomear, Resetar
 // senha, Ativar/Inativar, Excluir), para reduzir a poluição visual de
@@ -1031,9 +1035,9 @@ async function renderAdminUsers(){
         <div class="actions-menu">
           <button class="btn-kebab" title="Mais ações" onclick="toggleUserActionsMenu(event,'${u.id}')">⋯</button>
           <div class="actions-menu-panel hidden" id="actionsMenu-${u.id}">
-            <button onclick="fecharUserActionsMenu('${u.id}'); openRenameModal('${u.id}')">Renomear</button>
-            <button onclick="fecharUserActionsMenu('${u.id}'); openResetModal('${u.id}')">Resetar senha</button>
-            <button onclick="fecharUserActionsMenu('${u.id}'); alternarAtivoUsuario('${u.id}', ${!u.ativo})">${u.ativo?'Inativar':'Ativar'}</button>
+            <button onclick="fecharUserActionsMenu('${u.id}'); openRenameModal('${u.id}')">${ICONE_RENOMEAR} Renomear</button>
+            <button onclick="fecharUserActionsMenu('${u.id}'); openResetModal('${u.id}')">${ICONE_CHAVE} Resetar senha</button>
+            <button onclick="fecharUserActionsMenu('${u.id}'); alternarAtivoUsuario('${u.id}', ${!u.ativo})">${u.ativo?ICONE_PAUSE:ICONE_PLAY} ${u.ativo?'Inativar':'Ativar'}</button>
             ${currentUser && u.id!==currentUser.id ? `<button class="danger" onclick="fecharUserActionsMenu('${u.id}'); confirmarExclusaoUsuario('${u.id}')">${ICONE_LIXEIRA} Excluir</button>` : ''}
           </div>
         </div>
