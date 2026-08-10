@@ -987,6 +987,8 @@ function renderClientes(){
 // "admin-users" (veja supabase/functions/admin-users e SETUP.md), que
 // roda no servidor do Supabase com a service_role key protegida.
 // ---------------------------------------------------------------------
+const ICONE_LIXEIRA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
+
 async function renderAdminUsers(){
   const { data, error } = await supabaseClient.from('profiles').select('*').order('nome');
   if(error){ alert('Erro ao carregar usuários: '+error.message); return; }
@@ -1010,7 +1012,7 @@ async function renderAdminUsers(){
         <button class="btn btn-outline" onclick="openRenameModal('${u.id}')">Renomear</button>
         <button class="btn btn-outline" onclick="openResetModal('${u.id}')">Resetar senha</button>
         <button class="btn ${u.ativo?'btn-red':'btn-green'}" onclick="alternarAtivoUsuario('${u.id}', ${!u.ativo})">${u.ativo?'Inativar':'Ativar'}</button>
-        ${currentUser && u.id!==currentUser.id ? `<button class="btn btn-red" title="Excluir usuário" onclick="confirmarExclusaoUsuario('${u.id}')">🗑️ Excluir</button>` : ''}
+        ${currentUser && u.id!==currentUser.id ? `<button class="btn btn-danger-outline" title="Excluir usuário" onclick="confirmarExclusaoUsuario('${u.id}')">${ICONE_LIXEIRA} Excluir</button>` : '<span></span>'}
       </td>
     </tr>`).join('') || '<tr><td colspan="7">Nenhum usuário encontrado.</td></tr>';
 }
