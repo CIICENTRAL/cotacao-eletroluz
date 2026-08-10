@@ -164,7 +164,7 @@ async function carregarSessaoAtual(){
   document.getElementById('login').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('branchName').textContent = currentUser.filial_padrao || '';
-  document.getElementById('opsTopBtn').classList.toggle('hidden', !(currentUser.permissoes.perm_fila));
+  document.getElementById('opsTopBtn').classList.toggle('hidden', !(currentUser.permissoes.perm_fila || currentUser.perfil==='loja'));
   document.getElementById('adminTopBtn').classList.toggle('hidden', !(currentUser.permissoes.perm_usuarios));
 
   await carregarOportunidades();
