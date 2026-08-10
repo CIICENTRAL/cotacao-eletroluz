@@ -1153,3 +1153,36 @@ async function savePermissoes(){
   closePermissoesModal();
   renderAdminUsers();
 }
+
+// ---------------------------------------------------------------------
+// 17) ATUALIZAÇÃO AUTOMÁTICA (evita precisar apertar F5)
+// -----------------------------------------------------------------------
+// A cada 5 segundos, se houver alguém logado, recarrega as oportunidades
+// do Supabase e atualiza a tela de lista/painel que estiver aberta —
+// assim, quando o gestor cadastra ou altera algo, a equipe operacional vê
+// a mudança automaticamente, sem precisar recarregar a página.
+// Não mexe nas telas de "Detalhe" e "Atendimento", nem quando há algum
+// modal aberto, para não atrapalhar quem estiver digitando uma resposta
+// ou preenchendo um campo naquele momento.
+// ---------------------------------------------------------------------
+setInterval(async ()=>{
+  if(!currentUser || !currentScreen) return;
+  const telasAtualizaveis = ['loja','lucas','gestor','estoque','clientes'];
+  if(!telasAtualizaveis.includes(currentScreen)) return;
+  if(document.querySelector('.modal-bg:not(.hidden)')) return;
+
+  await carregarOportunidades();
+
+  if(currentScreen==='loja'){
+    const termo = document.querySelector('#screen-loja .search')?.value || '';
+    renderLoja(termo);
+  } else if(currentScreen==='lucas'){
+    renderLucas();
+  } else if(currentScreen==='gestor'){
+    atualizarDashboardGestor();
+  } else if(currentScreen==='estoque'){
+    renderEstoque();
+  } else if(currentScreen==='clientes'){
+    renderClientes();
+  }
+}, 5000);
