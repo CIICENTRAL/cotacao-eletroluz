@@ -74,6 +74,7 @@ label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}
 .brand{display:flex;align-items:center;gap:12px}
 .brand-main{font-size:22px;font-weight:900;color:var(--azul);line-height:1}
 .brand-sub{font-size:12px;color:var(--muted);font-weight:800;margin-top:4px}
+.brand-user{font-size:12px;color:var(--azul);font-weight:800;margin-top:4px}
 .top-actions{display:flex;align-items:center;gap:10px}
 .branch-pill{background:#F4F7FF;border:1px solid #DCE5F8;color:var(--azul);padding:10px 14px;border-radius:999px;font-weight:900}
 .container{max-width:1240px;margin:0 auto;padding:24px}
@@ -524,6 +525,7 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
       <div>
         <div class="brand-main">Cotação</div>
         <div class="brand-sub">Eletroluz</div>
+        <div id="topbarUserName" class="brand-user"></div>
       </div>
     </div>
     <div class="top-actions">
@@ -671,6 +673,7 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
       </div>
       <div class="page-actions">
         <button id="backDashboardBtn" class="btn btn-outline hidden" onclick="show('gestor')">VOLTAR AO DASHBOARD</button>
+        <button id="backLojaBtn" class="btn btn-outline hidden" onclick="show('loja')">VOLTAR</button>
         <button class="btn btn-primary" onclick="assumirProxima()">ASSUMIR PRÓXIMA</button>
       </div>
     </div>
@@ -847,7 +850,7 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
         <div class="donut-wrap">
           <div class="donut"><div class="donut-center" id="donutTotal">0</div></div>
           <div class="legend">
-            <div><span style="background:var(--verde)"></span>Verde: <b id="chartSlaVerde">0</b></div>
+            <div><span style="background:var(--verde)"></span>Azul: <b id="chartSlaVerde">0</b></div>
             <div><span style="background:var(--laranja)"></span>Atenção: <b id="chartSlaAtencao">0</b></div>
             <div><span style="background:var(--amarelo)"></span>Aguardando loja: <b id="chartSlaLoja">0</b></div>
             <div><span style="background:var(--vermelho)"></span>Vermelho: <b id="chartSlaVermelho">0</b></div>
@@ -868,7 +871,7 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
     <div class="grid2">
       <div class="card panel">
         <div class="section-title">SLA</div>
-        <div class="status-line"><span>Verde</span><b style="color:var(--verde)" id="kGestorSlaVerde">0</b></div>
+        <div class="status-line"><span>Azul</span><b style="color:var(--verde)" id="kGestorSlaVerde">0</b></div>
         <div class="status-line"><span>Atenção</span><b style="color:var(--laranja)" id="kGestorSlaAtencao">0</b></div>
         <div class="status-line"><span>Vermelho</span><b style="color:var(--vermelho)" id="kGestorSlaVermelho">0</b></div>
       </div>
