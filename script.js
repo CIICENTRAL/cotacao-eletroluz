@@ -530,12 +530,11 @@ async function processarAnexoItem(event){
   if(itensAdicionadosPorPlanilha){
     statusEl.textContent = `${itensAdicionadosPorPlanilha} item(ns) adicionados automaticamente a partir da planilha.`;
   } else {
-    statusEl.textContent = 'Leitura concluída. Confira o texto extraído abaixo e preencha os campos do item manualmente.';
+    statusEl.textContent = 'Leitura concluída. Preencha os campos do item manualmente.';
   }
-  if(textoExtraido.trim()){
-    extrasEl.textContent = textoExtraido.trim().slice(0, 2000);
-    extrasEl.classList.remove('hidden');
-  }
+  // O texto bruto extraído de PDF/foto não é mais exibido para o usuário
+  // (ficava com aparência de "texto quebrado"/ilegível na tela).
+  extrasEl.classList.add('hidden');
 }
 
 function atualizarArquivosProjeto(event){
