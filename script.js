@@ -19,6 +19,11 @@ const DOMINIO_LOGIN = "eletroluz.net"; // usado só para montar o e-mail interno
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Bucket do Supabase Storage onde ficam os arquivos de Projeto Elétrico
+// anexados pela loja (plantas, memoriais, especificações). Precisa existir
+// no painel do Supabase (Storage > New bucket), como bucket privado.
+const BUCKET_ARQUIVOS_PROJETO = 'arquivos-projeto';
+
 // ---------------------------------------------------------------------
 // 0.1) RECUPERAÇÃO DE SENHA ("Esqueci minha senha")
 // -----------------------------------------------------------------------
@@ -567,11 +572,24 @@ async function sendOpportunity(){
     const { error: erroItens } = await supabaseClient.from('itens').insert(linhas);
     if(erroItens) alert('Oportunidade criada, mas houve erro ao salvar os itens: '+erroItens.message);
   } else {
-    // Observação: o upload real dos arquivos de projeto para o Supabase Storage é o próximo passo
-    // de configuração (veja SETUP.md). Por ora, guardamos apenas o nome dos arquivos selecionados.
+    // Envia de fato cada arquivo para o Supabase Storage (bucket BUCKET_ARQUIVOS_PROJETO)
+    // e só depois grava, na tabela arquivos_projeto, o caminho real de onde ele ficou
+    // guardado — é esse caminho que permite ao operador abrir/baixar o arquivo depois.
     if(projetoArquivosDraft.length){
-      const linhas = projetoArquivosDraft.map(f=>({ oportunidade_id: novaOp.id, nome: f.name, url: '' }));
-      await supabaseClient.from('arquivos_projeto').insert(linhas);
+      const linhasOk = [];
+      for(const file of projetoArquivosDraft){
+        const caminho = `${novaOp.id}/${Date.now()}-${file.name}`;
+        const { error: erroUpload } = await supabaseClient.storage.from(BUCKET_ARQUIVOS_PROJETO).upload(caminho, file);
+        if(erroUpload){
+          alert(`Oportunidade criada, mas houve erro ao enviar o arquivo "${file.name}": ${erroUpload.message}`);
+          continue;
+        }
+        linhasOk.push({ oportunidade_id: novaOp.id, nome: file.name, url: caminho });
+      }
+      if(linhasOk.length){
+        const { error: erroArquivos } = await supabaseClient.from('arquivos_projeto').insert(linhasOk);
+        if(erroArquivos) alert('Arquivo(s) enviado(s), mas houve erro ao registrar no sistema: '+erroArquivos.message);
+      }
     }
   }
 
@@ -753,6 +771,30 @@ async function assumirProxima(){
 // ---------------------------------------------------------------------
 // 12) TELA DE ATENDIMENTO (Operação)
 // ---------------------------------------------------------------------
+
+// Gera, para cada arquivo de projeto anexado pela loja, um link temporário
+// (válido por 1h) de acesso ao arquivo guardado no Supabase Storage, e
+// preenche a lista na tela de atendimento. Roda em segundo plano (não
+// trava a abertura da tela) e trata graciosamente arquivos antigos que
+// foram cadastrados antes desta correção (sem caminho salvo no Storage).
+async function carregarLinksArquivosProjeto(arquivos){
+  const el = document.getElementById('aArquivosProjeto');
+  if(!el) return;
+  if(!arquivos.length){ el.textContent = 'Nenhum arquivo.'; return; }
+  el.textContent = 'Carregando link(s) do(s) arquivo(s)...';
+  const linhas = await Promise.all(arquivos.map(async a=>{
+    if(!a.url){
+      return `${escapeHtml(a.nome)} <span class="small muted">(arquivo enviado antes desta correção — peça para a loja reenviar)</span>`;
+    }
+    const { data, error } = await supabaseClient.storage.from(BUCKET_ARQUIVOS_PROJETO).createSignedUrl(a.url, 3600);
+    if(error || !data){
+      return `${escapeHtml(a.nome)} <span class="small muted">(não foi possível gerar o link: ${escapeHtml(error?.message||'erro desconhecido')})</span>`;
+    }
+    return `<a href="${data.signedUrl}" target="_blank" rel="noopener">${escapeHtml(a.nome)}</a>`;
+  }));
+  el.innerHTML = linhas.join('<br>');
+}
+
 function abrirAtendimento(id){
   const op = buscarOportunidade(id);
   if(!op) return;
@@ -776,7 +818,7 @@ function abrirAtendimento(id){
     extrasEl.classList.remove('hidden');
   } else extrasEl.classList.add('hidden');
 
-  document.getElementById('aArquivosProjeto').innerHTML = (op.arquivos_projeto||[]).map(a=>escapeHtml(a.nome)).join('<br>') || 'Nenhum arquivo.';
+  carregarLinksArquivosProjeto(op.arquivos_projeto || []);
   document.getElementById('aCodigoEletroluz').value = op.codigo_eletroluz || '';
   document.getElementById('aComprador').value = op.comprador || '';
   document.getElementById('acaoAtualBox').textContent = op.proxima_acao || '-';
