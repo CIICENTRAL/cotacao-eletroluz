@@ -56,6 +56,7 @@ let lucasFilterAtual = 'todos';
 let adminPerfilFilterAtual = 'todos';
 let adminStatusFilterAtual = 'todos';
 let adminUsuarioSelecionadoId = null; // usado pelos modais de reset/rename/permissões
+let compradoresCache = []; // lista de nomes de "Comprador responsável", gerenciada só por Gestor/Administração
 
 const FILIAIS = [
   "Matriz - Maringá","Sarandi","Cianorte","Campo Mourão","Umuarama","Apucarana",
@@ -174,6 +175,7 @@ async function carregarSessaoAtual(){
   document.getElementById('adminTopBtn').classList.toggle('hidden', !(currentUser.permissoes.perm_usuarios));
 
   await carregarOportunidades();
+  await carregarCompradores();
 
   if(currentUser.perfil === 'loja') show('loja');
   else if(currentUser.permissoes.perm_dashboard) show('gestor');
@@ -208,7 +210,7 @@ async function show(nome){
   if(nome==='nova') prepararNovaOportunidade();
   if(nome==='lucas') renderLucas();
   if(nome==='gestor') atualizarDashboardGestor();
-  if(nome==='admin') renderAdminUsers();
+  if(nome==='admin'){ renderAdminUsers(); renderCompradoresAdmin(); }
   if(nome==='estoque') renderEstoque();
   if(nome==='clientes') renderClientes();
 }
@@ -233,6 +235,15 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 // ---------------------------------------------------------------------
 // 4) CARREGAMENTO DE DADOS (Supabase)
 // ---------------------------------------------------------------------
+// Lista de nomes disponíveis para "Comprador responsável". Fica guardada na
+// tabela compradores (id, nome) do Supabase — incluir/remover nomes aqui é
+// feito só pela tela de Administração (Gestor/Administração).
+async function carregarCompradores(){
+  const { data, error } = await supabaseClient.from('compradores').select('*').order('nome');
+  if(error){ console.error(error); return; }
+  compradoresCache = data || [];
+}
+
 async function carregarOportunidades(){
   const { data, error } = await supabaseClient
     .from('oportunidades')
@@ -794,6 +805,18 @@ async function carregarLinksArquivosProjeto(arquivos){
   el.innerHTML = linhas.join('<br>');
 }
 
+// Monta as opções do "Comprador responsável" a partir da lista cadastrada
+// (compradoresCache). Se o valor já salvo na oportunidade não estiver mais
+// na lista (por exemplo, foi removido depois), ele é mantido como opção
+// extra só para não perder a informação já registrada.
+function preencherSelectComprador(nomeAtual){
+  const select = document.getElementById('aComprador');
+  if(!select) return;
+  const nomes = compradoresCache.map(c=>c.nome);
+  if(nomeAtual && !nomes.includes(nomeAtual)) nomes.unshift(nomeAtual);
+  select.innerHTML = '<option value="">Selecione...</option>' + nomes.map(n=>`<option ${n===nomeAtual?'selected':''}>${escapeHtml(n)}</option>`).join('');
+}
+
 function abrirAtendimento(id){
   const op = buscarOportunidade(id);
   if(!op) return;
@@ -819,7 +842,7 @@ function abrirAtendimento(id){
 
   carregarLinksArquivosProjeto(op.arquivos_projeto || []);
   document.getElementById('aCodigoEletroluz').value = op.codigo_eletroluz || '';
-  document.getElementById('aComprador').value = op.comprador || '';
+  preencherSelectComprador(op.comprador || '');
   document.getElementById('acaoAtualBox').textContent = op.proxima_acao || '-';
   document.getElementById('aResposta').value = op.resposta_loja || '';
 
@@ -1239,6 +1262,40 @@ async function savePermissoes(){
   if(error){ alert('Erro: '+error.message); return; }
   closePermissoesModal();
   renderAdminUsers();
+}
+
+// --- Compradores responsáveis (só aparece na tela de Administração,
+// já restrita a Gestor/Administração pela permissão perm_usuarios) ---
+function renderCompradoresAdmin(){
+  const body = document.getElementById('compradoresBody');
+  if(!body) return;
+  body.innerHTML = compradoresCache.length
+    ? compradoresCache.map(c=>`
+      <div class="status-line">
+        <span>${escapeHtml(c.nome)}</span>
+        <button class="btn btn-outline" style="padding:4px 10px;font-size:12px" onclick="removerComprador('${c.id}')">Remover</button>
+      </div>`).join('')
+    : '<div class="item-empty">Nenhum comprador cadastrado ainda.</div>';
+}
+
+async function adicionarComprador(){
+  const campo = document.getElementById('novoCompradorNome');
+  const nome = campo.value.trim();
+  if(!nome){ alert('Informe o nome do comprador.'); return; }
+  const { error } = await supabaseClient.from('compradores').insert({ nome });
+  if(error){ alert('Erro ao adicionar comprador: '+error.message); return; }
+  campo.value = '';
+  await carregarCompradores();
+  renderCompradoresAdmin();
+}
+
+async function removerComprador(id){
+  const c = compradoresCache.find(x=>x.id===id);
+  if(!confirm(`Remover "${c ? c.nome : 'este comprador'}" da lista de compradores responsáveis?`)) return;
+  const { error } = await supabaseClient.from('compradores').delete().eq('id', id);
+  if(error){ alert('Erro ao remover: '+error.message); return; }
+  await carregarCompradores();
+  renderCompradoresAdmin();
 }
 
 // ---------------------------------------------------------------------
