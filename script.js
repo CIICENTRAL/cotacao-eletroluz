@@ -164,6 +164,7 @@ async function carregarSessaoAtual(){
   document.getElementById('login').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('branchName').textContent = currentUser.filial_padrao || '';
+  document.getElementById('topbarUserName').textContent = currentUser.nome || '';
   document.getElementById('opsTopBtn').classList.toggle('hidden', !(currentUser.permissoes.perm_fila || currentUser.perfil==='loja'));
   document.getElementById('adminTopBtn').classList.toggle('hidden', !(currentUser.permissoes.perm_usuarios));
 
@@ -181,6 +182,7 @@ function mostrarTelaLogin(){
   document.getElementById('login').classList.remove('hidden');
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
+  document.getElementById('topbarUserName').textContent = '';
 }
 
 async function logout(){
@@ -212,6 +214,14 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     alert('Não foi possível carregar a biblioteca do Supabase. Verifique sua conexão com a internet.');
     return;
   }
+
+  // Permite entrar apertando Enter no campo de usuário ou de senha,
+  // sem precisar clicar no botão ENTRAR com o mouse.
+  const campoLoginUser = document.getElementById('loginUser');
+  const campoLoginPass = document.getElementById('loginPass');
+  if(campoLoginUser) campoLoginUser.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doLogin(); } });
+  if(campoLoginPass) campoLoginPass.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doLogin(); } });
+
   await carregarSessaoAtual();
 });
 
@@ -655,6 +665,12 @@ function renderLucas(){
   if(btnVoltarDashboard){
     const temDashboard = !!(currentUser && currentUser.permissoes && currentUser.permissoes.perm_dashboard);
     btnVoltarDashboard.classList.toggle('hidden', !temDashboard);
+  }
+  // Usuário de Loja não tem Dashboard para voltar — para ele, o botão "Voltar"
+  // leva de volta para a tela de Nova Oportunidade ("Minhas Oportunidades").
+  const btnVoltarLoja = document.getElementById('backLojaBtn');
+  if(btnVoltarLoja){
+    btnVoltarLoja.classList.toggle('hidden', !(currentUser && currentUser.perfil==='loja'));
   }
 
   // lista: usada nos KPIs/gráficos "em aberto" — comportamento idêntico ao que já existia
