@@ -695,7 +695,7 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
     </div>
     <div class="chart-grid">
       <div class="card chart-card">
-        <div class="chart-title">Foco operacional do Lucas</div>
+        <div class="chart-title">Foco operacional</div>
         <div class="bar-row"><div>Na fila</div><div class="bar-bg"><div class="bar-fill" style="width:25%"></div></div><b id="chartLucasFila">0</b></div>
         <div class="bar-row"><div>Em atendimento</div><div class="bar-bg"><div class="bar-fill orange" style="width:25%"></div></div><b id="chartLucasAtendimento">0</b></div>
         <div class="bar-row"><div>Aguardando fornecedor</div><div class="bar-bg"><div class="bar-fill red" style="width:25%"></div></div><b id="chartLucasFornecedor">0</b></div>
@@ -751,7 +751,7 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
           <hr style="border:0;border-top:1px solid var(--borda);margin:18px 0">
           <div class="grid3">
             <div class="field"><label>Código Eletroluz</label><input id="aCodigoEletroluz" placeholder="Ainda não cadastrado" oninput="salvarCodigoEletroluz()"></div>
-            <div class="field"><label>Comprador responsável</label><select id="aComprador" onchange="salvarComprador()"><option value="">Selecione...</option><option>João Victor Dias</option><option>Matheus Felipe da Silva</option><option>Wellington Garcia</option><option>Thaís Rios</option></select></div>
+            <div class="field"><label>Comprador responsável</label><select id="aComprador" onchange="salvarComprador()"><option value="">Selecione...</option></select></div>
             <div class="next-action-box">
               <div class="label">Próxima ação atual</div>
               <div class="value" id="acaoAtualBox">-</div>
@@ -950,6 +950,15 @@ th{color:var(--muted);text-transform:uppercase;font-size:12px}
         <div class="status-line"><span>Intervalo</span><b>13:00 às 14:12</b></div>
         <div class="status-line"><span>Fim</span><b>18:00</b></div>
         <div class="status-line"><span>Vermelho</span><b>Acima de 4h úteis</b></div>
+      </div>
+      <div class="card panel">
+        <div class="section-title">Compradores responsáveis</div>
+        <div class="small muted" style="margin-bottom:10px">Nomes disponíveis para escolher como "Comprador responsável" na tela de atendimento. Somente Gestor/Administração podem incluir ou remover nomes aqui.</div>
+        <div class="field" style="display:flex;gap:8px;align-items:flex-end;margin-bottom:6px">
+          <div style="flex:1"><label>Novo comprador</label><input id="novoCompradorNome" placeholder="Nome completo"></div>
+          <button class="btn btn-light" onclick="adicionarComprador()">+ Adicionar</button>
+        </div>
+        <div id="compradoresBody"></div>
       </div>
     </div>
   </main>
