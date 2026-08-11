@@ -683,11 +683,11 @@ function renderLucas(){
     const temDashboard = !!(currentUser && currentUser.permissoes && currentUser.permissoes.perm_dashboard);
     btnVoltarDashboard.classList.toggle('hidden', !temDashboard);
   }
-  // Usuário de Loja não tem Dashboard para voltar — para ele, o botão "Voltar"
-  // leva de volta para a tela de Nova Oportunidade ("Minhas Oportunidades").
+  // Usuário de Loja ou de Apoio não tem Dashboard para voltar — para eles, o
+  // botão "Voltar" leva de volta para a tela de Nova Oportunidade ("Minhas Oportunidades").
   const btnVoltarLoja = document.getElementById('backLojaBtn');
   if(btnVoltarLoja){
-    btnVoltarLoja.classList.toggle('hidden', !(currentUser && currentUser.perfil==='loja'));
+    btnVoltarLoja.classList.toggle('hidden', !(currentUser && (currentUser.perfil==='loja' || currentUser.perfil==='apoio')));
   }
 
   // lista: usada nos KPIs/gráficos "em aberto" — comportamento idêntico ao que já existia
